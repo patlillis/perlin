@@ -1,8 +1,9 @@
 class Agent {
-    constructor(simplex, alea, canvas, palette) {
-        this.simplex = simplex;
-        this.alea = alea;
-        this.canvas = canvas;
+    // params should have: { simplex, alea, canvas }
+    constructor(color, params) {
+        this.simplex = params.simplex;
+        this.alea = params.alea;
+        this.canvas = params.canvas;
         this.ctx = this.canvas.getContext("2d");
 
         this.x = this.alea();
@@ -14,7 +15,10 @@ class Agent {
         this.pastX = [];
         this.pastY = [];
 
-        this.color = palette[Math.floor(palette.length * this.alea())];
+        this.color = color;
+        this.lineWidth = Math.floor(2 * this.alea());
+        this.pastSegments = 5;//Math.floor(10 * this.alea());
+        this.ticksLeft = this.alea() * 1000 + 1000;
     }
 
     update(offsetX, offsetY) {
@@ -36,14 +40,16 @@ class Agent {
         this.pastX.push(this.x);
         this.pastY.push(this.y);
 
-        if (this.pastX.length > 10) this.pastX.shift();
-        if (this.pastY.length > 10) this.pastY.shift();
+        if (this.pastX.length > this.pastSegments) this.pastX.shift();
+        if (this.pastY.length > this.pastSegments) this.pastY.shift();
 
         this.resistance += 0.05 * (this.alea() - 0.5);
 
         if (this.resistance < 0) this.resistance = 0.2 * this.alea();
         if (this.resistance > 1) this.resistance = 0.2 * this.alea() + 0.8;
         this.resistance = Math.min(Math.max(this.resistance, 0), 1.0);
+
+        this.ticksLeft--;
     }
 
     draw() {
@@ -54,7 +60,7 @@ class Agent {
 
         ctx.moveTo(x * this.canvas.width, y * this.canvas.height);
 
-        for (var i = 1; i < this.pastX.length; i++) {
+        for (var i = 1; i < this.pastSegments; i++) {
             var newX = this.pastX[i];
             var newY = this.pastY[i];
 
@@ -71,6 +77,7 @@ class Agent {
         }
 
         ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
         ctx.stroke();
     }
 
@@ -82,7 +89,6 @@ class Agent {
     checkLine(a, b) {
         if (a < 0.2 && b > 0.8) return false;
         if (b < 0.2 && a > 0.8) return false;
-
         return true;
     }
 }

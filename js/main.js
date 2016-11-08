@@ -1,8 +1,11 @@
+var alea;
+var simplex;
+var palette;
 var canvas;
 var ctx;
 var width;
 var height;
-var agents = [];
+var sliders = [];
 var fps = 60;
 var offsetX = 0;
 var offsetY = 0;
@@ -35,7 +38,7 @@ var palettes = {
 };
 
 function init() {
-    var palette = palettes.acid;
+    palette = palettes.acid;
 
     canvas = document.getElementById("cnvs");
     ctx = this.canvas.getContext("2d");
@@ -43,14 +46,31 @@ function init() {
 
     resize();
 
-    var alea = new Alea();
-    var simplex = new SimplexNoise(alea);
+    alea = new Alea();
+    simplex = new SimplexNoise(alea);
 
-    for (var i = 0; i < 3000; i++) {
-        agents.push(new Agent(simplex, alea, canvas, palette.slice(1, palette.length)));
+    for (var i = 1; i < palette.length; i++) {
+        var color = palette[i];
+        sliders.push(new Slider(alea(), alea(), color, {simplex, alea, canvas}));
     }
 
+    canvas.addEventListener('click', function(e) {
+        var clickCoords = getCursorPositionOnCanvas(e);
+        for (var i = 0; i < sliders.length; i++) {
+            if (sliders[i].hitTest(clickCoords.x, clickCoords.y)) {
+                sliders[i].onClick();
+            }
+        }
+    }, false);
+
     draw();
+}
+
+function getCursorPositionOnCanvas(event) {
+    var rect = canvas.getBoundingClientRect();
+    var x = event.clientX - rect.left;
+    var y = event.clientY - rect.top;
+    return {x, y};
 }
 
 function resize() {
@@ -64,9 +84,9 @@ function resize() {
 function draw() {
     ctx.clearRect(0, 0, width, height);
 
-    for (var i = 0; i < agents.length; i++) {
-        agents[i].update(offsetX, offsetY);
-        agents[i].draw();
+    for (var i = 0; i < sliders.length; i++) {
+        sliders[i].update(offsetX, offsetY);
+        sliders[i].draw();
     }
 
     offsetX += offsetInc;
