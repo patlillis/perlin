@@ -1,3 +1,4 @@
+var audios = [];
 var alea;
 var simplex;
 var palette;
@@ -36,8 +37,14 @@ var palettes = {
         '#E6F99D'
     ]
 };
+var audioFiles = [
+    "sounds/balloons.mp4",
+    "sounds/piano.mp4",
+    "sounds/violin.mp4"
+];
 
 function init() {
+    initAudio();
     palette = palettes.acid;
 
     canvas = document.getElementById("cnvs");
@@ -55,15 +62,46 @@ function init() {
     }
 
     canvas.addEventListener('click', function(e) {
+
         var clickCoords = getCursorPositionOnCanvas(e);
         for (var i = 0; i < sliders.length; i++) {
             if (sliders[i].hitTest(clickCoords.x, clickCoords.y)) {
                 sliders[i].onClick();
+                toggleAudio(i);
+                break;
             }
         }
     }, false);
 
     draw();
+}
+
+function initAudio() {
+    function preloadAudio(url) {
+        var audio = new Audio();
+        // once this file loads, it will call loadedAudio()
+        // the file will be kept by the browser as cache
+        audio.addEventListener('canplaythrough', audioLoaded.bind(null, url), false);
+        audio.src = url;
+    }
+
+    function audioLoaded(url) {
+        var audio = document.createElement("audio");
+        audio.src = url;
+        audio.loop = true;
+        audios.push(audio);
+    }
+
+    for (var i = 0; i < audioFiles.length; i++) {
+        preloadAudio(audioFiles[i]);
+    }
+}
+
+function toggleAudio(i) {
+    if (audios[i].paused)
+        audios[i].play();
+    else
+        audios[i].pause();
 }
 
 function getCursorPositionOnCanvas(event) {

@@ -8,8 +8,8 @@ class Slider {
 
         this.x = x;
         this.y = y;
-        this.height = (this.alea() * 100) + 20;
-        this.width = (this.alea() * 100) + 20;
+        this.height = (this.alea() * 100) + 50;
+        this.width = (this.alea() * 100) + 50;
         this.color = color;
         this.numAgents = (this.alea() * 300) + 200;
         this.agents = [];
