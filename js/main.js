@@ -1,16 +1,17 @@
-var audios = [];
 var alea;
-var simplex;
-var palette;
+var audioFiles = [
+    "balloons",
+    "piano",
+    "violin"
+];
 var canvas;
 var ctx;
-var width;
-var height;
-var sliders = [];
 var fps = 60;
+var height;
+var offsetInc = 0.002;
 var offsetX = 0;
 var offsetY = 0;
-var offsetInc = 0.002;
+var palette;
 var palettes = {
     blue: [
         '#FAFAFA',
@@ -37,11 +38,11 @@ var palettes = {
         '#E6F99D'
     ]
 };
-var audioFiles = [
-    "sounds/balloons.mp4",
-    "sounds/piano.mp4",
-    "sounds/violin.mp4"
-];
+var simplex;
+var sliders = [];
+var soundManager;
+var sounds = [];
+var width;
 
 function init() {
     initAudio();
@@ -58,7 +59,7 @@ function init() {
 
     for (var i = 1; i < palette.length; i++) {
         var color = palette[i];
-        sliders.push(new Slider(alea(), alea(), color, {simplex, alea, canvas}));
+        sliders.push(new Slider(alea(), alea(), color, { simplex, alea, canvas }));
     }
 
     canvas.addEventListener('click', function(e) {
@@ -67,7 +68,8 @@ function init() {
         for (var i = 0; i < sliders.length; i++) {
             if (sliders[i].hitTest(clickCoords.x, clickCoords.y)) {
                 sliders[i].onClick();
-                toggleAudio(i);
+
+                soundManager.setVolume(sounds[i].id, 100 - sounds[i].volume);
                 break;
             }
         }
@@ -77,38 +79,55 @@ function init() {
 }
 
 function initAudio() {
-    function preloadAudio(url) {
-        var audio = new Audio();
-        // once this file loads, it will call loadedAudio()
-        // the file will be kept by the browser as cache
-        audio.addEventListener('canplaythrough', audioLoaded.bind(null, url), false);
-        audio.src = url;
+    // initialize the sound manager
+    soundManager.url = 'soundManager2/';
+    soundManager.useHTML5Audio = true;
+    soundManager.preferFlash = false;
+    soundManager.useHighPerformance = true; // reduces delays
+
+    // reduce the default 1 sec delay to 500 ms
+    soundManager.flashLoadTimeout = 500;
+
+    // mp3 is required by default, but we don't want any requirements
+    soundManager.audioFormats.mp3.required = false;
+
+    soundManager.onready(function() {
+        // Stuff is ready!
+        // console.log('STUFF IS READY!!!');
+    });
+
+    var loader = new PxLoader(),
+        i, len, url;
+
+    // queue each sound for loading
+    for (i = 0, len = audioFiles.length; i < len; i++) {
+
+        // see if the browser can play mp3
+        url = 'sounds/' + audioFiles[i] + '.mp3';
+        if (!soundManager.canPlayURL(url)) {
+            continue; // can't be played
+        }
+
+        // queue the sound using the name as the SM2 id
+        loader.addSound(audioFiles[i], url);
     }
 
-    function audioLoaded(url) {
-        var audio = document.createElement("audio");
-        audio.src = url;
-        audio.loop = true;
-        audios.push(audio);
-    }
+    loader.addCompletionListener(function() {
+        for (var audioFile of audioFiles) {
+            var sound = soundManager.setVolume(audioFile, 0);
+            sound.play();
+            sounds.push(sound);
+        }
+    });
 
-    for (var i = 0; i < audioFiles.length; i++) {
-        preloadAudio(audioFiles[i]);
-    }
-}
-
-function toggleAudio(i) {
-    if (audios[i].paused)
-        audios[i].play();
-    else
-        audios[i].pause();
+    loader.start();
 }
 
 function getCursorPositionOnCanvas(event) {
     var rect = canvas.getBoundingClientRect();
     var x = event.clientX - rect.left;
     var y = event.clientY - rect.top;
-    return {x, y};
+    return { x, y };
 }
 
 function resize() {
