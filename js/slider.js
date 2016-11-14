@@ -24,7 +24,9 @@ class Slider {
     }
 
     get actualX() { return this.x * this.canvas.width; }
+    setActualX(aX) { this.x = aX / this.canvas.width; }
     get actualY() { return this.y * this.canvas.height; }
+    setActualY(aY) { this.y = aY / this.canvas.height; }
 
     update(offsetX, offsetY) {
         for (var i = 0; i < this.numAgents; i++) {
