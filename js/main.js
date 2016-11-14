@@ -38,9 +38,9 @@ var palettes = {
     ]
 };
 var audioFiles = [
-    "sounds/balloons.mp4",
-    "sounds/piano.mp4",
-    "sounds/violin.mp4"
+    "sounds/balloons.mp3",
+    "sounds/piano.mp3",
+    "sounds/violin.mp3"
 ];
 
 function init() {
