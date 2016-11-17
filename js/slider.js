@@ -1,72 +1,76 @@
 class Slider {
-    // params should have: { simplex, alea, canvas }
-    constructor(x, y, color, params) {
-        this.simplex = params.simplex;
+    // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
+    constructor(color, position, params) {
         this.alea = params.alea;
-        this.canvas = params.canvas;
-        this.ctx = this.canvas.getContext('2d');
-
-        this.x = x;
-        this.y = y;
-        this.height = (this.alea() * 100) + 50;
-        this.width = (this.alea() * 100) + 50;
+        this.position = position;
         this.color = color;
-        this.numAgents = (this.alea() * 300) + 200;
         this.agents = [];
+        this.rectangles = [];
+        this.enabled = true;
+        this.canvas = params.canvas;
 
-        this.params = params;
+        this.spawnAgent = () => new Agent(color, params);
 
-        for (var i = 0; i < this.numAgents; i++) {
-            this.agents.push(new Agent(color, this.params));
+        var numAgents = (this.alea() * 300) + 200;
+        for (var i = 0; i < numAgents; i++) {
+            this.agents.push(this.spawnAgent());
         }
 
-        this.enabled = true;
+        // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
+        this.min = new Vector(Infinity, Infinity);
+        this.max = new Vector(-Infinity, -Infinity);
     }
 
-    get actualX() { return this.x * this.canvas.width; }
-    setActualX(aX) { this.x = aX / this.canvas.width; }
-    get actualY() { return this.y * this.canvas.height; }
-    setActualY(aY) { this.y = aY / this.canvas.height; }
+    addRectangle(r) {
+        this.rectangles.push(r);
+        this.min = Vector.min(this.min, r.position);
+        this.max = Vector.max(this.max, Vector.add(r.position, r.size));
+    }
 
-    update(offsetX, offsetY) {
-        for (var i = 0; i < this.numAgents; i++) {
-            this.agents[i].update(offsetX, offsetY);
+    get origin() {
+        return new Vector(this.canvas.width * this.position.x, this.canvas.height * this.position.y);
+    }
+
+    setOrigin(o) {
+        this.position.x = o.x / this.canvas.width;
+        this.position.y = o.y / this.canvas.height;
+    }
+
+    update(offset) {
+        for (var i = 0; i < this.agents.length; i++) {
+            this.agents[i].update(offset);
 
             if (this.agents[i].ticksLeft <= 0) {
-                this.agents[i] = new Agent(this.color, this.params);
+                this.agents[i] = this.spawnAgent();
             }
         }
     }
 
-    draw() {
-        for (var i = 0; i < this.numAgents; i++) {
+    drawAgents() {
+        for (var i = 0; i < this.agents.length; i++) {
             this.agents[i].draw();
         }
-
-        var opacity = this.enabled ? "1" : "0.4";
-        this.ctx.fillStyle = "rgba(" + this.hexToRgb(this.color) + ", " + opacity + ")";
-        this.ctx.fillRect(this.actualX, this.actualY, this.width, this.height)
     }
 
-    hitTest(x, y) {
-        if (x < this.actualX) return false;
-        if (x > this.actualX + this.width) return false;
-        if (y < this.actualY) return false;
-        if (y > this.actualY + this.height) return false;
+    drawRectangles() {
+        for (var i = 0; i < this.rectangles.length; i++) {
+            this.rectangles[i].draw(this.origin);
+        }
+    }
 
-        return true;
+    hitTest(point) {
+        for (var i = 0; i < this.rectangles.length; i++) {
+            if (this.rectangles[i].hitTest(this.origin, point)) return true;
+        }
+
+        return false;
     }
 
     onClick() {
         this.enabled = !this.enabled;
-    }
 
-    hexToRgb(hex) {
-        var bigint = parseInt(hex.substring(1), 16);
-        var r = (bigint >> 16) & 255;
-        var g = (bigint >> 8) & 255;
-        var b = bigint & 255;
-
-        return r + "," + g + "," + b;
+        for (var i = 0; i < this.rectangles.length; i++) {
+            this.rectangles[i].enabled = this.enabled;
+        }
     }
 }

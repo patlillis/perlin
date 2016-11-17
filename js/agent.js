@@ -6,42 +6,40 @@ class Agent {
         this.canvas = params.canvas;
         this.ctx = this.canvas.getContext("2d");
 
-        this.x = this.alea();
-        this.y = this.alea();
+        this.position = new Vector(this.alea(), this.alea());
 
         this.speed = 0.005 * this.alea() + 0.001;
         this.resistance = this.alea();
 
-        this.pastX = [];
-        this.pastY = [];
+        this.pastPositions = [this.position];
 
         this.color = color;
+        do {
         this.lineWidth = Math.floor(2 * this.alea());
-        this.pastSegments = 5;//Math.floor(10 * this.alea());
+        } while (this.lineWidth !== 0);
+        this.maxPastPositions = 5;//Math.floor(10 * this.alea());
         this.ticksLeft = this.alea() * 1000 + 1000;
     }
 
-    update(offsetX, offsetY) {
+    update(offset) {
         // Get the pixel the agent is over
-        var pixel = this.simplex.noise2D(this.x + offsetX, this.y + offsetY);
+        var pixel = this.simplex.noise2D(this.position.x + offset.x, this.position.y + offset.y);
 
         // Set the angle and the speed according to brightness
         var speed = pixel * this.speed;
         var angle = pixel * 360 * Math.PI / 180;
 
         // Update the agent's position / rotation
-        this.x += Math.cos(angle) * speed * (1 - this.resistance);
-        this.y += Math.sin(angle) * speed * (1 - this.resistance);
+        this.position.x += Math.cos(angle) * speed * (1 - this.resistance);
+        this.position.y += Math.sin(angle) * speed * (1 - this.resistance);
         this.rotation = pixel * 360;
 
-        this.x = this.mod(this.x, 1.0);
-        this.y = this.mod(this.y, 1.0);
+        this.position.x = this.mod(this.position.x, 1.0);
+        this.position.y = this.mod(this.position.y, 1.0);
 
-        this.pastX.push(this.x);
-        this.pastY.push(this.y);
+        this.pastPositions.push(this.position.clone());
 
-        if (this.pastX.length > this.pastSegments) this.pastX.shift();
-        if (this.pastY.length > this.pastSegments) this.pastY.shift();
+        if (this.pastPositions.length > this.maxPastPositions) this.pastPositions.shift();
 
         this.resistance += 0.05 * (this.alea() - 0.5);
 
@@ -53,27 +51,24 @@ class Agent {
     }
 
     draw() {
-        ctx.beginPath();
+        this.ctx.beginPath();
 
-        var x = this.pastX[0];
-        var y = this.pastY[0];
+        var pastPosition = this.pastPositions[0];
 
-        ctx.moveTo(x * this.canvas.width, y * this.canvas.height);
+        this.ctx.moveTo(pastPosition.x * this.canvas.width, pastPosition.y * this.canvas.height);
 
-        for (var i = 1; i < this.pastSegments; i++) {
-            var newX = this.pastX[i];
-            var newY = this.pastY[i];
+        for (var i = 1; i < this.pastPositions.length; i++) {
+            var newPosition = this.pastPositions[i];
 
-            if (this.checkLine(x, newX) && this.checkLine(y, newY)) {
-                ctx.lineTo(newX * this.canvas.width, newY * this.canvas.height);
+            if (this.checkPoints(pastPosition, newPosition)) {
+                this.ctx.lineTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
             else {
-                ctx.stroke();
-                ctx.moveTo(newX * this.canvas.width, newY * this.canvas.height);
+                this.ctx.stroke();
+                this.ctx.moveTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
 
-            x = newX;
-            y = newY;
+            pastPosition = newPosition;
         }
 
         ctx.strokeStyle = this.color;
@@ -86,9 +81,11 @@ class Agent {
     }
 
     // Make sure that a line from a to b didn't cross the screen boundary.
-    checkLine(a, b) {
-        if (a < 0.2 && b > 0.8) return false;
-        if (b < 0.2 && a > 0.8) return false;
+    checkPoints(a, b) {
+        if (a.x < 0.2 && b.x > 0.8) return false;
+        if (b.x < 0.2 && a.x > 0.8) return false;
+        if (a.y < 0.2 && b.y > 0.8) return false;
+        if (b.y < 0.2 && a.y > 0.8) return false;
         return true;
     }
 }

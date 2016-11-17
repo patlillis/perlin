@@ -9,66 +9,39 @@ var canvas;
 var control;
 var ctx;
 var dragging = null;
-var dragHoldX;
-var dragHoldY;
+var dragHoldPosition = Vector.zero;
 var easeAmount = 0.05;
 var fps = 60;
 var hasMoved = false;
-var height;
-var mouseX;
-var mouseY;
+var mousePosition = Vector.zero;
 var offsetInc = 0.002;
-var offsetX = 0;
-var offsetY = 0;
-var palette;
-var palettes = {
-    blue: [
-        '#FAFAFA',
-        '#C7EEFF',
-        '#0077C0',
-        '#1D242B'
-    ],
-    lemonade: [
-        '#F7E74A',
-        '#09C6AB',
-        '#068888',
-        '#02556D'
-    ],
-    cyborg: [
-        '#3C2F3D',
-        '#2EAC6D',
-        '#9DDA52',
-        '#F0F0F0'
-    ],
-    acid: [
-        '#041122',
-        '#259073',
-        '#7FDA89',
-        '#E6F99D'
-    ]
-};
+var offset = Vector.zero;
 var simplex;
 var sliders = [];
-var targetX;
-var targetY;
-var width;
+var targetPosition = Vector.zero;
 
 function init() {
     initAudio();
-    palette = palettes.acid;
 
     canvas = document.getElementById("cnvs");
+    canvas.size = () => new Vector(canvas.width, canvas.height);
     ctx = this.canvas.getContext("2d");
-    canvas.style.backgroundColor = palette[0];
+    canvas.style.backgroundColor = PALETTE[0];
 
     resize();
 
     alea = new Alea();
     simplex = new SimplexNoise(alea);
 
-    for (var i = 1; i < palette.length; i++) {
-        var color = palette[i];
-        sliders.push(new Slider(alea(), alea(), color, { simplex, alea, canvas }));
+    for (var i = 0; i < RECTANGLES.length; i++) {
+        var data = RECTANGLES[i];
+        var slider = new Slider(data[0], data[1], { simplex, alea, canvas });
+        sliders.push(slider);
+
+        for (var j = 2; j < data.length; j++) {
+            var rect = data[j];
+            slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
+        }
     }
 
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
@@ -79,22 +52,20 @@ function init() {
 // We are going to pay attention to the layering order of the objects so that if a mouse down occurs over more than object,
 // only the topmost one will be dragged.
 function canvasMouseDownListener(e) {
-    var clickCoords = getCursorPositionOnCanvas(e);
-    mouseX = clickCoords.x;
-    mouseY = clickCoords.y;
+    mousePosition = getCursorPositionOnCanvas(e);
 
     //Find which shape was clicked
     for (var i = sliders.length - 1; i >= 0; i--) {
         var slider = sliders[i];
-        if (slider.hitTest(mouseX, mouseY)) {
+        if (slider.hitTest(mousePosition)) {
             dragging = slider;
 
             // We will pay attention to the point on the object where the mouse is "holding" the object:
-            dragHoldX = mouseX - slider.actualX;
-            dragHoldY = mouseY - slider.actualY;
+            dragHoldPosition.x = mousePosition.x - slider.origin.x;
+            dragHoldPosition.y = mousePosition.y - slider.origin.y;
 
-            targetX = mouseX - dragHoldX;
-            targetY = mouseY - dragHoldY;
+            targetPosition.x = mousePosition.x - dragHoldPosition.x;
+            targetPosition.y = mousePosition.y - dragHoldPosition.y;
 
             break;
         }
@@ -124,9 +95,9 @@ function canvasMouseUpListener(e) {
     if (!hasMoved) {
         // Didn't drag anything, see if one of the controls was clicked.
         var clickCoords = getCursorPositionOnCanvas(e);
-        if (clickCoords.x == mouseX && clickCoords.y == mouseY) {
+        if (Vector.eq(clickCoords, mousePosition)) {
             for (var i = sliders.length - 1; i >= 0; i--) {
-                if (sliders[i].hitTest(clickCoords.x, clickCoords.y)) {
+                if (sliders[i].hitTest(clickCoords)) {
                     sliders[i].onClick();
                     toggleAudio(i);
                     break;
@@ -144,28 +115,20 @@ function canvasMouseUpListener(e) {
 
 function canvasMouseMoveListener(e) {
     hasMoved = true;
-    var posX;
-    var posY;
 
     //Control can move around in the middle quarter of the canvas
-    var minX = 0;
-    var maxX = canvas.width - dragging.width;
-    var minY = 0;
-    var maxY = canvas.height - dragging.height;
+    var min = Vector.subtract(Vector.zero, dragging.min);
+    var max = Vector.subtract(canvas.size(), dragging.max);
 
     //getting mouse position correctly
-    var clickCoords = getCursorPositionOnCanvas(e);
-    mouseX = clickCoords.x;
-    mouseY = clickCoords.y;
+    mousePosition = getCursorPositionOnCanvas(e);
 
     //clamp x and y positions to prevent object from dragging outside of canvas
-    posX = mouseX - dragHoldX;
-    posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-    posY = mouseY - dragHoldY;
-    posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+    var pos = new Vector(mousePosition.x - dragHoldPosition.x, mousePosition.y - dragHoldPosition.y);
+    pos.x = (pos.x < min.x) ? min.x : ((pos.x > max.x) ? max.x : pos.x);
+    pos.y = (pos.y < min.y) ? min.y : ((pos.y > max.y) ? max.y : pos.y);
 
-    targetX = posX;
-    targetY = posY;
+    targetPosition = pos;
 }
 
 
@@ -203,32 +166,34 @@ function getCursorPositionOnCanvas(event) {
     var rect = canvas.getBoundingClientRect();
     var x = (event.clientX - rect.left) * (canvas.width / rect.width);
     var y = (event.clientY - rect.top) * (canvas.width / rect.width);
-    return { x, y };
+    return new Vector(x, y);
 }
 
 function resize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
 
 function draw() {
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (dragging !== null) {
-        dragging.setActualX(dragging.actualX + easeAmount * (targetX - dragging.actualX));
-        dragging.setActualY(dragging.actualY + easeAmount * (targetY - dragging.actualY));
+        var x = dragging.origin.x + easeAmount * (targetPosition.x - dragging.origin.x);
+        var y = dragging.origin.y + easeAmount * (targetPosition.y - dragging.origin.y);
+        dragging.setOrigin(new Vector(x, y));
     }
 
     for (var i = 0; i < sliders.length; i++) {
-        sliders[i].update(offsetX, offsetY);
-        sliders[i].draw();
+        sliders[i].update(offset);
+        sliders[i].drawRectangles();
     }
 
-    offsetX += offsetInc;
-    offsetY += offsetInc;
+    for (var i = 0; i < sliders.length; i++) {
+        sliders[i].drawAgents();
+    }
+
+    offset.x += offsetInc;
+    offset.y += offsetInc;
 
     requestAnimationFrame(draw);
 }
