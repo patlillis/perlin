@@ -1,6 +1,6 @@
 class Slider {
     // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
-    constructor(color, position, params) {
+    constructor(color, audioUrl, position, params) {
         this.alea = params.alea;
         this.position = position;
         this.color = color;
@@ -19,6 +19,25 @@ class Slider {
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
         this.min = new Vector(Infinity, Infinity);
         this.max = new Vector(-Infinity, -Infinity);
+
+        this.initAudio(audioUrl);
+    }
+
+    initAudio(url) {
+        var audio = new Audio();
+        // once this file loads, it will call audioLoaded()
+        // the file will be kept by the browser as cache
+        audio.addEventListener('canplaythrough', audioLoaded.bind(this), false);
+        audio.src = url;
+
+        function audioLoaded() {
+            var audioEl = document.createElement("audio");
+            audioEl.src = url;
+            audioEl.loop = true;
+            audioEl.volume = 0;
+            audioEl.play();
+            this.audio = audioEl;
+        }
     }
 
     addRectangle(r) {
@@ -67,10 +86,15 @@ class Slider {
     }
 
     onClick() {
+        // Toggle opacity to indicate on/off
         this.enabled = !this.enabled;
-
         for (var i = 0; i < this.rectangles.length; i++) {
             this.rectangles[i].enabled = this.enabled;
+        }
+
+        // Toggle audio on/off
+        if (this.audio) {
+            this.audio.volume = 1.0 - this.audio.volume;
         }
     }
 }

@@ -1,9 +1,4 @@
 var alea;
-var audioFiles = [
-    "sounds/balloons.mp3",
-    "sounds/piano.mp3",
-    "sounds/violin.mp3"
-];
 var audios = [];
 var canvas;
 var control;
@@ -21,8 +16,6 @@ var sliders = [];
 var targetPosition = Vector.zero;
 
 function init() {
-    initAudio();
-
     canvas = document.getElementById("cnvs");
     canvas.size = () => new Vector(canvas.width, canvas.height);
     ctx = this.canvas.getContext("2d");
@@ -35,10 +28,10 @@ function init() {
 
     for (var i = 0; i < RECTANGLES.length; i++) {
         var data = RECTANGLES[i];
-        var slider = new Slider(data[0], data[1], { simplex, alea, canvas });
+        var slider = new Slider(data[0], data[1], data[2], { simplex, alea, canvas });
         sliders.push(slider);
 
-        for (var j = 2; j < data.length; j++) {
+        for (var j = 3; j < data.length; j++) {
             var rect = data[j];
             slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
         }
@@ -99,7 +92,6 @@ function canvasMouseUpListener(e) {
             for (var i = sliders.length - 1; i >= 0; i--) {
                 if (sliders[i].hitTest(clickCoords)) {
                     sliders[i].onClick();
-                    toggleAudio(i);
                     break;
                 }
             }
@@ -129,36 +121,6 @@ function canvasMouseMoveListener(e) {
     pos.y = (pos.y < min.y) ? min.y : ((pos.y > max.y) ? max.y : pos.y);
 
     targetPosition = pos;
-}
-
-
-
-function initAudio() {
-    function preloadAudio(url) {
-        var audio = new Audio();
-        // once this file loads, it will call loadedAudio()
-        // the file will be kept by the browser as cache
-        audio.addEventListener('canplaythrough', audioLoaded.bind(null, url), false);
-        audio.src = url;
-    }
-
-    function audioLoaded(url) {
-        var audio = document.createElement("audio");
-        audio.src = url;
-        audio.loop = true;
-        audios.push(audio);
-    }
-
-    for (var i = 0; i < audioFiles.length; i++) {
-        preloadAudio(audioFiles[i]);
-    }
-}
-
-function toggleAudio(i) {
-    if (audios[i].paused)
-        audios[i].play();
-    else
-        audios[i].pause();
 }
 
 // Getting mouse position correctly, being mindful of resizing that may have occured in the browser:
