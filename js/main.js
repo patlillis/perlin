@@ -38,6 +38,7 @@ function init() {
     }
 
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
+    canvas.addEventListener("touchstart", canvasMouseDownListener, false);
 
     draw();
 }
@@ -66,10 +67,13 @@ function canvasMouseDownListener(e) {
 
     if (dragging !== null) {
         window.addEventListener("mousemove", canvasMouseMoveListener, false);
+        window.addEventListener("touchmove", canvasMouseMoveListener, false);
     }
 
     canvas.removeEventListener("mousedown", canvasMouseDownListener, false);
+    canvas.removeEventListener("touchstart", canvasMouseDownListener, false);
     window.addEventListener("mouseup", canvasMouseUpListener, false);
+    window.addEventListener("touchend", canvasMouseUpListener, false);
 
     // Code below prevents the mouse down from having an effect on the main browser window:
     if (e.preventDefault) {
@@ -83,7 +87,9 @@ function canvasMouseDownListener(e) {
 
 function canvasMouseUpListener(e) {
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
+    canvas.addEventListener("touchstart", canvasMouseDownListener, false);
     window.removeEventListener("mouseup", canvasMouseUpListener, false);
+    window.removeEventListener("touchend", canvasMouseUpListener, false);
 
     if (!hasMoved) {
         // Didn't drag anything, see if one of the controls was clicked.
@@ -102,6 +108,7 @@ function canvasMouseUpListener(e) {
         dragging = null;
         hasMoved = false;
         window.removeEventListener("mousemove", canvasMouseMoveListener, false);
+        window.removeEventListener("touchmove", canvasMouseMoveListener, false);
     }
 }
 

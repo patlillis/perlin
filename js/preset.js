@@ -57,6 +57,6 @@ var RECTANGLES = [
         AUDIO_FILES[2],
         new Vector(0.8, 0.2),
         new Rectangle(new V(-25, -25), new V(75, 75)),
-        new Rectangle(new V(-30, 20), new V(125, 25)),
+        new Rectangle(new V(-30, 27), new V(125, 25)),
     ]
 ];

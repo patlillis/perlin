@@ -14,9 +14,7 @@ class Agent {
         this.pastPositions = [this.position];
 
         this.color = color;
-        do {
-        this.lineWidth = Math.floor(2 * this.alea());
-        } while (this.lineWidth !== 0);
+        this.lineWidth = (0.75 * this.alea()) + 0.25;
         this.maxPastPositions = 5;//Math.floor(10 * this.alea());
         this.ticksLeft = this.alea() * 1000 + 1000;
     }
@@ -71,8 +69,8 @@ class Agent {
             pastPosition = newPosition;
         }
 
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.lineWidth;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.lineWidth = 0.3;
         ctx.stroke();
     }
 
