@@ -1,19 +1,21 @@
 class Slider {
     // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
-    constructor(color, audioUrl, position, params) {
+    constructor(color, audioUrl, offPosition, onPosition, startPosition, params) {
         this.alea = params.alea;
-        this.position = position;
+        this.offPosition = offPosition;
+        this.onPosition = onPosition;
+        this.position = Vector.lerp(offPosition, onPosition, startPosition);
         this.color = color;
-        this.agents = [];
+        this.blips = [];
         this.rectangles = [];
-        this.enabled = true;
+        this.enabled = false;
         this.canvas = params.canvas;
 
-        this.spawnAgent = () => new Agent(color, params);
+        this.spawnBlip = () => new Blip(color, params);
 
-        var numAgents = (this.alea() * 300) + 200;
-        for (var i = 0; i < numAgents; i++) {
-            this.agents.push(this.spawnAgent());
+        var numBlips = (this.alea() * 300) + 200;
+        for (var i = 0; i < numBlips; i++) {
+            this.blips.push(this.spawnBlip());
         }
 
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
@@ -56,18 +58,18 @@ class Slider {
     }
 
     update(offset) {
-        for (var i = 0; i < this.agents.length; i++) {
-            this.agents[i].update(offset);
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].update(offset);
 
-            if (this.agents[i].ticksLeft <= 0) {
-                this.agents[i] = this.spawnAgent();
-            }
+            // if (this.blips[i].ticksLeft <= 0) {
+            //     this.blips[i] = this.spawnBlip();
+            // }
         }
     }
 
-    drawAgents() {
-        for (var i = 0; i < this.agents.length; i++) {
-            this.agents[i].draw();
+    drawBlips() {
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].draw();
         }
     }
 
@@ -90,6 +92,9 @@ class Slider {
         this.enabled = !this.enabled;
         for (var i = 0; i < this.rectangles.length; i++) {
             this.rectangles[i].enabled = this.enabled;
+        }
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].enabled = this.enabled;
         }
 
         // Toggle audio on/off

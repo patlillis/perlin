@@ -30,6 +30,10 @@ class Vector {
         return new Vector(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y));
     }
 
+    static lerp(v1, v2, t) {
+        return new Vector(lerpDouble(v1.x, v2.x, t), lerpDouble(v1.y, v2.y, t));
+    }
+
     static normalize(v) {
         var len = Math.sqrt(v.x * v.x + v.y * v.y);
         if (len == 0)

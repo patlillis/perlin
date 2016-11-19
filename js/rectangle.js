@@ -8,7 +8,7 @@ class Rectangle {
         if (this.canvas) {
             this.ctx = this.canvas.getContext('2d');
         }
-        this.enabled = true;
+        this.enabled = false;
     }
 
     hitTest(origin, point) {
@@ -20,18 +20,9 @@ class Rectangle {
         return true;
     }
 
-    hexToRgb(hex) {
-        var bigint = parseInt(hex.substring(1), 16);
-        var r = (bigint >> 16) & 255;
-        var g = (bigint >> 8) & 255;
-        var b = bigint & 255;
-
-        return r + "," + g + "," + b;
-    }
-
     draw(origin) {
         var opacity = this.enabled ? "1" : "0.4";
-        this.ctx.fillStyle = "rgba(" + this.hexToRgb(this.color) + ", " + opacity + ")";
+        this.ctx.fillStyle = "rgba(" + hexToRgb(this.color) + ", " + opacity + ")";
         this.ctx.clearRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.fillRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.strokeStyle = this.bgColor;

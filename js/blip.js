@@ -1,4 +1,4 @@
-class Agent {
+class Blip {
     // params should have: { simplex, alea, canvas }
     constructor(color, params) {
         this.simplex = params.simplex;
@@ -14,26 +14,39 @@ class Agent {
         this.pastPositions = [this.position];
 
         this.color = color;
-        this.lineWidth = (0.75 * this.alea()) + 0.25;
+        this.lineWidth = 0.5 * this.alea() + 0.25;
         this.maxPastPositions = 5;//Math.floor(10 * this.alea());
-        this.ticksLeft = this.alea() * 1000 + 1000;
+        // this.ticksLeft = this.alea() * 1000 + 1000;
+        this.enabled = false;
+
+        this.pulsePeriod = 5 * this.alea() + 1;
+        this.pulseAmplitude = 0.75 * this.alea() + 0.25;
+        this.pulseOffset = this.alea() * 2 * Math.PI;
+    }
+
+    calculateOpacity() {
+        var ms = new Date().getTime() / 800;
+        var sin = Math.sin((ms + this.pulseOffset) * this.pulsePeriod);
+        // Actually want between 0 and 1.
+        var opacity = (sin * 0.5) + 1;
+        return opacity * this.pulseAmplitude;
     }
 
     update(offset) {
-        // Get the pixel the agent is over
+        // Get the pixel the blip is over
         var pixel = this.simplex.noise2D(this.position.x + offset.x, this.position.y + offset.y);
 
         // Set the angle and the speed according to brightness
         var speed = pixel * this.speed;
         var angle = pixel * 360 * Math.PI / 180;
 
-        // Update the agent's position / rotation
+        // Update the blip's position / rotation
         this.position.x += Math.cos(angle) * speed * (1 - this.resistance);
         this.position.y += Math.sin(angle) * speed * (1 - this.resistance);
         this.rotation = pixel * 360;
 
-        this.position.x = this.mod(this.position.x, 1.0);
-        this.position.y = this.mod(this.position.y, 1.0);
+        this.position.x = mod(this.position.x, 1.0);
+        this.position.y = mod(this.position.y, 1.0);
 
         this.pastPositions.push(this.position.clone());
 
@@ -45,10 +58,14 @@ class Agent {
         if (this.resistance > 1) this.resistance = 0.2 * this.alea() + 0.8;
         this.resistance = Math.min(Math.max(this.resistance, 0), 1.0);
 
-        this.ticksLeft--;
+        // this.ticksLeft--;
     }
 
     draw() {
+        var opacity = this.calculateOpacity().toString();//this.enabled ? "0.4" : "1";
+        this.ctx.strokeStyle = "rgba(" + hexToRgb(this.color) + ", " + opacity + ")";
+        this.ctx.lineWidth = this.lineWidth;
+
         this.ctx.beginPath();
 
         var pastPosition = this.pastPositions[0];
@@ -62,20 +79,18 @@ class Agent {
                 this.ctx.lineTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
             else {
-                this.ctx.stroke();
+                if (this.enabled) {
+                    this.ctx.stroke();
+                }
                 this.ctx.moveTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
 
             pastPosition = newPosition;
         }
 
-        this.ctx.strokeStyle = this.color;
-        this.ctx.lineWidth = 0.3;
-        ctx.stroke();
-    }
-
-    mod(n, m) {
-        return ((n % m) + m) % m;
+        if (this.enabled) {
+            ctx.stroke();
+        }
     }
 
     // Make sure that a line from a to b didn't cross the screen boundary.

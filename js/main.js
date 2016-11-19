@@ -28,13 +28,19 @@ function init() {
 
     for (var i = 0; i < RECTANGLES.length; i++) {
         var data = RECTANGLES[i];
-        var slider = new Slider(data[0], data[1], data[2], { simplex, alea, canvas });
-        sliders.push(slider);
+        var color = data[0];
+        var audio = data[1];
+        var offPos = data[2];
+        var onPos = data[3];
+        var startPos = data[4];
+        var rectIndex = 5;
 
-        for (var j = 3; j < data.length; j++) {
-            var rect = data[j];
+        var slider = new Slider(color, audio, offPos, onPos, startPos, { simplex, alea, canvas });
+        for (; rectIndex < data.length; rectIndex++) {
+            var rect = data[rectIndex];
             slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
         }
+        sliders.push(slider);
     }
 
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
@@ -158,7 +164,7 @@ function draw() {
     }
 
     for (var i = 0; i < sliders.length; i++) {
-        sliders[i].drawAgents();
+        sliders[i].drawBlips();
     }
 
     offset.x += offsetInc;
