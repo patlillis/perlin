@@ -21,8 +21,7 @@ class Rectangle {
     }
 
     draw(origin) {
-        var opacity = this.enabled ? "1" : "0.4";
-        this.ctx.fillStyle = "rgba(" + hexToRgb(this.color) + ", " + opacity + ")";
+        this.ctx.fillStyle = this.color;
         this.ctx.clearRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.fillRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.strokeStyle = this.bgColor;

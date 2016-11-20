@@ -30,12 +30,12 @@ function init() {
         var data = RECTANGLES[i];
         var color = data[0];
         var audio = data[1];
-        var offPos = data[2];
-        var onPos = data[3];
+        var pos0 = data[2];
+        var pos1 = data[3];
         var startPos = data[4];
         var rectIndex = 5;
 
-        var slider = new Slider(color, audio, offPos, onPos, startPos, { simplex, alea, canvas });
+        var slider = new Slider(color, audio, pos0, pos1, startPos, { simplex, alea, canvas });
         for (; rectIndex < data.length; rectIndex++) {
             var rect = data[rectIndex];
             slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
@@ -134,11 +134,8 @@ function draw() {
 
     for (var i = 0; i < sliders.length; i++) {
         sliders[i].update(offset);
-        sliders[i].drawRectangles();
-    }
-
-    for (var i = 0; i < sliders.length; i++) {
         sliders[i].drawBlips();
+        sliders[i].drawRectangles();
     }
 
     offset.x += offsetInc;

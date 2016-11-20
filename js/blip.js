@@ -1,6 +1,6 @@
 class Blip {
     // params should have: { simplex, alea, canvas }
-    constructor(color, params) {
+    constructor(color, level, params) {
         this.simplex = params.simplex;
         this.alea = params.alea;
         this.canvas = params.canvas;
@@ -16,7 +16,7 @@ class Blip {
         this.color = color;
         this.lineWidth = 0.5 * this.alea() + 0.25;
         this.maxPastPositions = Math.floor(10 * this.alea());
-        this.enabled = false;
+        this.level = level;
 
         this.pulsePeriod = 5 * this.alea() + 1;
         this.pulseAmplitude = 0.5 * this.alea() + 0.5;
@@ -29,6 +29,10 @@ class Blip {
         var opacity = (sin * 0.5) + 0.5;
         // Scale to between (1 - amplitude) and 1.
         return (opacity * this.pulseAmplitude) + (1 - this.pulseAmplitude);
+    }
+
+    setLevel(l) {
+        this.level = l;
     }
 
     update(offset) {
@@ -56,12 +60,10 @@ class Blip {
         if (this.resistance < 0) this.resistance = 0.2 * this.alea();
         if (this.resistance > 1) this.resistance = 0.2 * this.alea() + 0.8;
         this.resistance = Math.min(Math.max(this.resistance, 0), 1.0);
-
-        // this.ticksLeft--;
     }
 
     draw() {
-        var opacity = this.calculateOpacity().toString();//this.enabled ? "0.4" : "1";
+        var opacity = (this.calculateOpacity() * this.level).toString();//this.enabled ? "0.4" : "1";
         this.ctx.strokeStyle = "rgba(" + hexToRgb(this.color) + ", " + opacity + ")";
         this.ctx.lineWidth = this.lineWidth;
 
@@ -78,7 +80,7 @@ class Blip {
                 this.ctx.lineTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
             else {
-                if (this.enabled) {
+                if (this.level > 0.01) {
                     this.ctx.stroke();
                 }
                 this.ctx.moveTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
@@ -87,7 +89,7 @@ class Blip {
             pastPosition = newPosition;
         }
 
-        if (this.enabled) {
+        if (this.level > 0.01) {
             ctx.stroke();
         }
     }

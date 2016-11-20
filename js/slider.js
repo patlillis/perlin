@@ -1,18 +1,19 @@
 class Slider {
     // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
-    constructor(color, audioUrl, offPosition, onPosition, startPosition, params) {
+    constructor(color, audioUrl, position0, position1, startPosition, params) {
         this.alea = params.alea;
-        this.offPosition = offPosition;
-        this.onPosition = onPosition;
-        this.position = Vector.lerp(offPosition, onPosition, startPosition);
+        this.position0 = position0;
+        this.position1 = position1;
+        // Parametric position in range [0,1] from position0 to position1.
+        this.positionParameter = startPosition;
         this.color = color;
         this.blips = [];
         this.rectangles = [];
-        this.enabled = false;
+        this.level = false;
         this.canvas = params.canvas;
-        this.easeAmount = 0.05;
+        this.easeAmount = 0.08;
 
-        this.spawnBlip = () => new Blip(color, params);
+        this.spawnBlip = () => new Blip(color, this.positionParameter, params);
 
         var numBlips = (this.alea() * 300) + 200;
         for (var i = 0; i < numBlips; i++) {
@@ -44,7 +45,7 @@ class Slider {
             var audioEl = document.createElement("audio");
             audioEl.src = url;
             audioEl.loop = true;
-            audioEl.volume = 0;
+            audioEl.volume = this.positionParameter;
             audioEl.play();
             this.audio = audioEl;
         }
@@ -56,23 +57,33 @@ class Slider {
         this.max = Vector.max(this.max, Vector.add(r.position, r.size));
     }
 
-    get origin() {
-        return new Vector(this.canvas.width * this.position.x, this.canvas.height * this.position.y);
+    percentageToScreenPos(p) {
+        return new Vector(this.canvas.width * p.x, this.canvas.height * p.y);
     }
 
-    setOrigin(o) {
-        this.position.x = o.x / this.canvas.width;
-        this.position.y = o.y / this.canvas.height;
+    // In screen coordinates.
+    get origin() {
+        return this.percentageToScreenPos(this.position);
     }
+
+    // In percentage.
+    get position() {
+        return Vector.lerp(this.position0, this.position1, this.positionParameter);
+    }
+
+    get position0Screen() { return this.percentageToScreenPos(this.position0); }
+    get position1Screen() { return this.percentageToScreenPos(this.position1); }
 
     update(offset) {
         // Update position, if dragging.
 
         if (this.dragging) {
-            var distance = Vector.subtract(this.targetPosition, this.origin);
-            var easedDistance = Vector.scale(distance, easeAmount);
-            var newOrigin = Vector.add(this.origin, easedDistance);
-            this.setOrigin(newOrigin);
+            var targetPar = this.getClosestPoint(this.targetPosition);
+            var distance = targetPar - this.positionParameter;
+            var easedDistance = distance * this.easeAmount;
+            var newPar = this.positionParameter + easedDistance;
+            this.positionParameter = newPar;
+            this.setLevel(this.positionParameter);
         }
 
         for (var i = 0; i < this.blips.length; i++) {
@@ -126,19 +137,47 @@ class Slider {
         this.dragging = false;
     }
 
-    click() {
-        // Toggle opacity to indicate on/off
-        this.enabled = !this.enabled;
-        for (var i = 0; i < this.rectangles.length; i++) {
-            this.rectangles[i].enabled = this.enabled;
-        }
+    // l should be in range [0,1].
+    setLevel(l) {
+        // for (var i = 0; i < this.rectangles.length; i++) {
+        //     this.rectangles[i].setLevel(l);
+        // }
         for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].enabled = this.enabled;
+            this.blips[i].setLevel(l);
         }
 
         // Toggle audio on/off
         if (this.audio) {
-            this.audio.volume = 1.0 - this.audio.volume;
+            this.audio.volume = l;
         }
+    }
+
+    click() {
+        // Toggle opacity to indicate on/off
+        // this.enabled = !this.enabled;
+        // for (var i = 0; i < this.rectangles.length; i++) {
+        //     this.rectangles[i].enabled = this.enabled;
+        // }
+        // for (var i = 0; i < this.blips.length; i++) {
+        //     this.blips[i].enabled = this.enabled;
+        // }
+
+        // // Toggle audio on/off
+        // if (this.audio) {
+        //     this.audio.volume = 1.0 - this.audio.volume;
+        // }
+    }
+    
+    // Returns the parametric value t, where t is in [0, 1] such that
+    // the closest point between this.offPosition and this.onPosition
+    // to p is the lerp at t.
+    getClosestPoint(p) {
+        var aToP = Vector.subtract(p, this.position0Screen);
+        var aToB = Vector.subtract(this.position1Screen, this.position0Screen);
+        var dot = Vector.dotProduct(aToP, aToB);
+        var t = dot / aToB.magnitude;
+
+        // Make sure we're within bounds.
+        return clamp(t, 0, 1);
     }
 }

@@ -4,6 +4,10 @@ class Vector {
         this.y = y || 0;
     }
 
+    get magnitude() {
+        return Math.pow(this.x, 2) + Math.pow(this.y, 2);
+    }
+
     clone() {
         return new Vector(this.x, this.y);
     }
@@ -44,6 +48,10 @@ class Vector {
             return Vector.zero;
 
         return new Vector(v.x / len, v.y / len);
+    }
+
+    static dotProduct(v1, v2) {
+        return v1.x * v2.x + v1.y * v2.y;
     }
 
     static eq(v1, v2) {

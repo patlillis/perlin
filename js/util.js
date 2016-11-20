@@ -14,3 +14,9 @@ function hexToRgb(hex) {
 function lerpDouble(a, b, t) {
     return (a + (b - a) * t);
 }
+
+function clamp(x, min, max) {
+    var xMin = Math.max(x, min);
+    var xMax = Math.min(xMin, max);
+    return xMax;
+}
