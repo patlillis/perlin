@@ -10,6 +10,7 @@ class Slider {
         this.rectangles = [];
         this.enabled = false;
         this.canvas = params.canvas;
+        this.easeAmount = 0.05;
 
         this.spawnBlip = () => new Blip(color, params);
 
@@ -23,6 +24,13 @@ class Slider {
         this.max = new Vector(-Infinity, -Infinity);
 
         this.initAudio(audioUrl);
+
+        // For tracking movement.
+        this.dragging = false;
+        // Position on slider that mouse was clicked.
+        this.dragPoint = Vector.zero;
+        // Position the slider should be moving towards.
+        this.targetPosition = Vector.zero;
     }
 
     initAudio(url) {
@@ -58,12 +66,17 @@ class Slider {
     }
 
     update(offset) {
+        // Update position, if dragging.
+
+        if (this.dragging) {
+            var distance = Vector.subtract(this.targetPosition, this.origin);
+            var easedDistance = Vector.scale(distance, easeAmount);
+            var newOrigin = Vector.add(this.origin, easedDistance);
+            this.setOrigin(newOrigin);
+        }
+
         for (var i = 0; i < this.blips.length; i++) {
             this.blips[i].update(offset);
-
-            // if (this.blips[i].ticksLeft <= 0) {
-            //     this.blips[i] = this.spawnBlip();
-            // }
         }
     }
 
@@ -81,13 +94,39 @@ class Slider {
 
     hitTest(point) {
         for (var i = 0; i < this.rectangles.length; i++) {
-            if (this.rectangles[i].hitTest(this.origin, point)) return true;
+            if (this.rectangles[i].hitTest(this.origin, point)) {
+                return true;
+            }
         }
-
         return false;
     }
 
-    onClick() {
+    dragStart(mousePosition) {
+        this.dragging = true;
+        // We will pay attention to the point on the object where the mouse is "holding" the object:
+        this.dragPoint = Vector.subtract(mousePosition, this.origin);
+        // Position we should be moving towards
+        this.targetPosition = Vector.subtract(mousePosition, this.dragPoint);
+    }
+
+    dragMove(mousePosition) {
+        //Control can move around in the middle quarter of the canvas
+        var min = Vector.subtract(Vector.zero, this.min);
+        var max = Vector.subtract(this.canvas.size(), this.max);
+
+        //clamp x and y positions to prevent object from dragging outside of canvas
+        var pos = Vector.subtract(mousePosition, this.dragPoint);
+        pos = Vector.max(pos, min);
+        pos = Vector.min(pos, max);
+
+        this.targetPosition = pos;
+    }
+
+    dragStop() {
+        this.dragging = false;
+    }
+
+    click() {
         // Toggle opacity to indicate on/off
         this.enabled = !this.enabled;
         for (var i = 0; i < this.rectangles.length; i++) {

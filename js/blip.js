@@ -15,21 +15,20 @@ class Blip {
 
         this.color = color;
         this.lineWidth = 0.5 * this.alea() + 0.25;
-        this.maxPastPositions = 5;//Math.floor(10 * this.alea());
-        // this.ticksLeft = this.alea() * 1000 + 1000;
+        this.maxPastPositions = Math.floor(10 * this.alea());
         this.enabled = false;
 
         this.pulsePeriod = 5 * this.alea() + 1;
-        this.pulseAmplitude = 0.75 * this.alea() + 0.25;
-        this.pulseOffset = this.alea() * 2 * Math.PI;
+        this.pulseAmplitude = 0.5 * this.alea() + 0.5;
     }
 
     calculateOpacity() {
         var ms = new Date().getTime() / 800;
-        var sin = Math.sin((ms + this.pulseOffset) * this.pulsePeriod);
-        // Actually want between 0 and 1.
-        var opacity = (sin * 0.5) + 1;
-        return opacity * this.pulseAmplitude;
+        var sin = Math.sin((ms) * this.pulsePeriod);
+        // Scale to between 0 and 1.
+        var opacity = (sin * 0.5) + 0.5;
+        // Scale to between (1 - amplitude) and 1.
+        return (opacity * this.pulseAmplitude) + (1 - this.pulseAmplitude);
     }
 
     update(offset) {

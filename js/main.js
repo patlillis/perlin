@@ -6,7 +6,7 @@ var ctx;
 var dragging = null;
 var dragHoldPosition = Vector.zero;
 var easeAmount = 0.05;
-var fps = 60;
+// var fps = 60;
 var hasMoved = false;
 var mousePosition = Vector.zero;
 var offsetInc = 0.002;
@@ -43,8 +43,7 @@ function init() {
         sliders.push(slider);
     }
 
-    canvas.addEventListener("mousedown", canvasMouseDownListener, false);
-    canvas.addEventListener("touchstart", canvasMouseDownListener, false);
+    canvas.addEventListener("mousedown", canvasMouseDownListener, false)
 
     draw();
 }
@@ -59,27 +58,17 @@ function canvasMouseDownListener(e) {
         var slider = sliders[i];
         if (slider.hitTest(mousePosition)) {
             dragging = slider;
-
-            // We will pay attention to the point on the object where the mouse is "holding" the object:
-            dragHoldPosition.x = mousePosition.x - slider.origin.x;
-            dragHoldPosition.y = mousePosition.y - slider.origin.y;
-
-            targetPosition.x = mousePosition.x - dragHoldPosition.x;
-            targetPosition.y = mousePosition.y - dragHoldPosition.y;
-
+            dragging.dragStart(mousePosition);
             break;
         }
     }
 
     if (dragging !== null) {
         window.addEventListener("mousemove", canvasMouseMoveListener, false);
-        window.addEventListener("touchmove", canvasMouseMoveListener, false);
     }
 
     canvas.removeEventListener("mousedown", canvasMouseDownListener, false);
-    canvas.removeEventListener("touchstart", canvasMouseDownListener, false);
     window.addEventListener("mouseup", canvasMouseUpListener, false);
-    window.addEventListener("touchend", canvasMouseUpListener, false);
 
     // Code below prevents the mouse down from having an effect on the main browser window:
     if (e.preventDefault) {
@@ -93,9 +82,7 @@ function canvasMouseDownListener(e) {
 
 function canvasMouseUpListener(e) {
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
-    canvas.addEventListener("touchstart", canvasMouseDownListener, false);
     window.removeEventListener("mouseup", canvasMouseUpListener, false);
-    window.removeEventListener("touchend", canvasMouseUpListener, false);
 
     if (!hasMoved) {
         // Didn't drag anything, see if one of the controls was clicked.
@@ -103,7 +90,7 @@ function canvasMouseUpListener(e) {
         if (Vector.eq(clickCoords, mousePosition)) {
             for (var i = sliders.length - 1; i >= 0; i--) {
                 if (sliders[i].hitTest(clickCoords)) {
-                    sliders[i].onClick();
+                    sliders[i].click();
                     break;
                 }
             }
@@ -111,29 +98,22 @@ function canvasMouseUpListener(e) {
     }
 
     if (dragging !== null) {
+        dragging.dragStop();
         dragging = null;
         hasMoved = false;
         window.removeEventListener("mousemove", canvasMouseMoveListener, false);
-        window.removeEventListener("touchmove", canvasMouseMoveListener, false);
     }
 }
 
 function canvasMouseMoveListener(e) {
     hasMoved = true;
 
-    //Control can move around in the middle quarter of the canvas
-    var min = Vector.subtract(Vector.zero, dragging.min);
-    var max = Vector.subtract(canvas.size(), dragging.max);
-
     //getting mouse position correctly
     mousePosition = getCursorPositionOnCanvas(e);
 
-    //clamp x and y positions to prevent object from dragging outside of canvas
-    var pos = new Vector(mousePosition.x - dragHoldPosition.x, mousePosition.y - dragHoldPosition.y);
-    pos.x = (pos.x < min.x) ? min.x : ((pos.x > max.x) ? max.x : pos.x);
-    pos.y = (pos.y < min.y) ? min.y : ((pos.y > max.y) ? max.y : pos.y);
-
-    targetPosition = pos;
+    if (dragging !== null) {
+        dragging.dragMove(mousePosition);
+    }
 }
 
 // Getting mouse position correctly, being mindful of resizing that may have occured in the browser:
@@ -151,12 +131,6 @@ function resize() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (dragging !== null) {
-        var x = dragging.origin.x + easeAmount * (targetPosition.x - dragging.origin.x);
-        var y = dragging.origin.y + easeAmount * (targetPosition.y - dragging.origin.y);
-        dragging.setOrigin(new Vector(x, y));
-    }
 
     for (var i = 0; i < sliders.length; i++) {
         sliders[i].update(offset);

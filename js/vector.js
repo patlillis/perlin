@@ -30,6 +30,10 @@ class Vector {
         return new Vector(Math.max(v1.x, v2.x), Math.max(v1.y, v2.y));
     }
 
+    static scale(v, s) {
+        return new Vector(v.x * s, v.y * s);
+    }
+
     static lerp(v1, v2, t) {
         return new Vector(lerpDouble(v1.x, v2.x, t), lerpDouble(v1.y, v2.y, t));
     }
