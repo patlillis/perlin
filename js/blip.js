@@ -1,3 +1,39 @@
+class BlipAnimator {
+    // params should have: { simplex, alea, canvas }
+    constructor(color, level, params) {
+        this.color = color;
+        this.level = level;
+        this.blips = [];
+        this.alea = params.alea;
+
+        this.spawnBlip = () => new Blip(color, this.level, params);
+
+        var numBlips = (this.alea() * 300) + 200;
+        for (var i = 0; i < numBlips; i++) {
+            this.blips.push(this.spawnBlip());
+        }
+    }
+
+    // l should be in range [0,1].
+    setLevel(l) {
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].setLevel(l);
+        }
+    }
+
+    update(offset) {
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].update(offset);
+        }
+    }
+
+    draw() {
+        for (var i = 0; i < this.blips.length; i++) {
+            this.blips[i].draw();
+        }
+    }
+}
+
 class Blip {
     // params should have: { simplex, alea, canvas }
     constructor(color, level, params) {

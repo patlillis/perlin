@@ -7,18 +7,11 @@ class Slider {
         // Parametric position in range [0,1] from position0 to position1.
         this.positionParameter = startPosition;
         this.color = color;
-        this.blips = [];
         this.rectangles = [];
-        this.level = false;
         this.canvas = params.canvas;
         this.easeAmount = 0.08;
 
-        this.spawnBlip = () => new Blip(color, this.positionParameter, params);
-
-        var numBlips = (this.alea() * 300) + 200;
-        for (var i = 0; i < numBlips; i++) {
-            this.blips.push(this.spawnBlip());
-        }
+        this.blipAnimator = new BlipAnimator(this.color, this.positionParameter, params);
 
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
         this.min = new Vector(Infinity, Infinity);
@@ -76,7 +69,6 @@ class Slider {
 
     update(offset) {
         // Update position, if dragging.
-
         if (this.dragging) {
             var targetPar = this.getClosestPoint(this.targetPosition);
             var distance = targetPar - this.positionParameter;
@@ -86,15 +78,12 @@ class Slider {
             this.setLevel(this.positionParameter);
         }
 
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].update(offset);
-        }
+        this.blipAnimator.update(offset);
     }
 
-    drawBlips() {
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].draw();
-        }
+    draw() {
+        this.blipAnimator.draw();
+        this.drawRectangles();
     }
 
     drawRectangles() {
@@ -139,33 +128,11 @@ class Slider {
 
     // l should be in range [0,1].
     setLevel(l) {
-        // for (var i = 0; i < this.rectangles.length; i++) {
-        //     this.rectangles[i].setLevel(l);
-        // }
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].setLevel(l);
-        }
-
+        this.blipAnimator.setLevel(l);
         // Toggle audio on/off
         if (this.audio) {
             this.audio.volume = l;
         }
-    }
-
-    click() {
-        // Toggle opacity to indicate on/off
-        // this.enabled = !this.enabled;
-        // for (var i = 0; i < this.rectangles.length; i++) {
-        //     this.rectangles[i].enabled = this.enabled;
-        // }
-        // for (var i = 0; i < this.blips.length; i++) {
-        //     this.blips[i].enabled = this.enabled;
-        // }
-
-        // // Toggle audio on/off
-        // if (this.audio) {
-        //     this.audio.volume = 1.0 - this.audio.volume;
-        // }
     }
     
     // Returns the parametric value t, where t is in [0, 1] such that

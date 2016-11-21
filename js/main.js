@@ -6,7 +6,6 @@ var ctx;
 var dragging = null;
 var dragHoldPosition = Vector.zero;
 var easeAmount = 0.05;
-// var fps = 60;
 var hasMoved = false;
 var mousePosition = Vector.zero;
 var offsetInc = 0.002;
@@ -134,8 +133,9 @@ function draw() {
 
     for (var i = 0; i < sliders.length; i++) {
         sliders[i].update(offset);
-        sliders[i].drawBlips();
-        sliders[i].drawRectangles();
+        sliders[i].draw();
+        // sliders[i].drawBlips();
+        // sliders[i].drawRectangles();
     }
 
     offset.x += offsetInc;
