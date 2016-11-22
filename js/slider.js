@@ -11,7 +11,8 @@ class Slider {
         this.canvas = params.canvas;
         this.easeAmount = 0.08;
 
-        this.blipAnimator = new BlipAnimator(this.color, this.positionParameter, params);
+        // this.animator = new BlipAnimator(this.color, this.positionParameter, params);
+        this.animator = new LaserAnimator(this.color, this.positionParameter, params);
 
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
         this.min = new Vector(Infinity, Infinity);
@@ -78,11 +79,11 @@ class Slider {
             this.setLevel(this.positionParameter);
         }
 
-        this.blipAnimator.update(offset);
+        this.animator.update(offset);
     }
 
     draw() {
-        this.blipAnimator.draw();
+        this.animator.draw();
         this.drawRectangles();
     }
 
@@ -128,7 +129,7 @@ class Slider {
 
     // l should be in range [0,1].
     setLevel(l) {
-        this.blipAnimator.setLevel(l);
+        this.animator.setLevel(l);
         // Toggle audio on/off
         if (this.audio) {
             this.audio.volume = l;
