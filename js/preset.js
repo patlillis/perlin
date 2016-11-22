@@ -1,57 +1,65 @@
 var PALETTES = {
-    blue: [
+    BLUE: [
         '#FAFAFA',
         '#C7EEFF',
         '#0077C0',
         '#1D242B'
     ],
-    lemonade: [
+    LEMONADE: [
         '#F7E74A',
         '#09C6AB',
         '#068888',
         '#02556D'
     ],
-    cyborg: [
+    CYBORG: [
         '#3C2F3D',
         '#2EAC6D',
         '#9DDA52',
         '#F0F0F0'
     ],
-    acid: [
+    ACID: [
         '#041122',
         '#259073',
         '#7FDA89',
         '#E6F99D'
     ]
 };
-var PALETTE = PALETTES.acid;
+var PALETTE = PALETTES.ACID;
 
-var AUDIO_FILES = [
-    "sounds/piano.mp3",
-    "sounds/violin.mp3",
-    "sounds/balloons.mp3",
-];
+var AUDIO_FILES = {
+    PIANO: "sounds/piano.mp3",
+    VIOLIN: "sounds/violin.mp3",
+    BALLOONS:"sounds/balloons.mp3",
+};
+
+var ANIMATORS = {
+    LASER: LaserAnimator,
+    BLIP: BlipAnimator
+}
 
 // Each entry here represents:
-//  1  -  A color for the slider/rectangles/blips
-//  2  -  An audio file for the slider
-//  3  -  Vector corresponding to the slider's 0 position (off) in percentage of total canvas size
-//  4  -  Vector corresponding to the slider's 1.0 position (on) in percentage of total canvas size
-//  5  -  Number in the range [0, 1.0] representing the starting point between the 0 and 100 positions.
-//  6+ -  A series of rectangles, where the position is a pixel offset from the anchor, and the size is in pixels
+//  1  -  An animator for the fancy effects
+//  2  -  A color for the slider/rectangles/effects
+//  3  -  An audio file for the slider
+//  4  -  Vector corresponding to the slider's 0 position (off) in percentage of total canvas size
+//  5  -  Vector corresponding to the slider's 1.0 position (on) in percentage of total canvas size
+//  6  -  Number in the range [0, 1.0] representing the starting point between the 0 and 100 positions.
+//  7+ -  A series of rectangles, where the position is a pixel offset from the anchor, and the size is in pixels
 var RECTANGLES = [
     [
+        ANIMATORS.BLIP,
         PALETTE[1],
-        AUDIO_FILES[0],
+        AUDIO_FILES.PIANO,
         new V(0.6, 0.3),
         new V(0.8, 0.3),
-        0.5,
+        0.2,
         new Rectangle(new V(-25, -25), new V(75, 75)),
         new Rectangle(new V(-33, -33), new V(25, 25)),
     ],
     [
+        ANIMATORS.LASER,
         PALETTE[2],
-        AUDIO_FILES[1],
+        AUDIO_FILES.VIOLIN,
         new V(0.4, 0.5),
         new V(0.6, 0.5),
         0.5,
@@ -59,11 +67,12 @@ var RECTANGLES = [
         new Rectangle(new V(-33, -33), new V(25, 25)),
     ],
     [
+        ANIMATORS.BLIP,
         PALETTE[3],
-        AUDIO_FILES[2],
+        AUDIO_FILES.BALLOONS,
         new V(0.2, 0.7),
         new V(0.4, 0.7),
-        0.5,
+        0.8,
         new Rectangle(new V(-25, -25), new V(75, 75)),
         new Rectangle(new V(-30, 27), new V(125, 25)),
     ]

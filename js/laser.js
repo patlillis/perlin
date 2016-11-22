@@ -14,17 +14,17 @@ class LaserAnimator {
         }
     }
 
-    // l should be in range [0,1].
-    setLevel(l) {
-        for (var i = 0; i < this.lasers.length; i++) {
-            this.lasers[i].setLevel(l);
-        }
+    // level should be in range [0,1].
+    setLevel(level) {
+        this.level = level;
+        this.lasers.forEach((l) => l.setLevel(level));
     }
 
     update(offset) {
         for (var i = 0; i < this.lasers.length; i++) {
             this.lasers[i].update(offset);
 
+            // If that update took the laser offscreen, respawn a new one at the top.
             if (this.lasers[i].isFinished) {
                 this.lasers[i] = this.spawnLaser();
             }
@@ -32,9 +32,7 @@ class LaserAnimator {
     }
 
     draw() {
-        for (var i = 0; i < this.lasers.length; i++) {
-            this.lasers[i].draw();
-        }
+        this.lasers.forEach((l) => l.draw());
     }
 }
 
@@ -63,7 +61,7 @@ class Laser {
 
     // Width is based on the current level.
     get width() {
-        return this.level * 5;
+        return this.level * 3;
     }
 
     get xPosition() {

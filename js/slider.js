@@ -1,6 +1,7 @@
 class Slider {
     // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
-    constructor(color, audioUrl, position0, position1, startPosition, params) {
+    constructor(animator, color, audioUrl, position0, position1, startPosition, params) {
+        // this.animator = animator;
         this.alea = params.alea;
         this.position0 = position0;
         this.position1 = position1;
@@ -12,7 +13,7 @@ class Slider {
         this.easeAmount = 0.08;
 
         // this.animator = new BlipAnimator(this.color, this.positionParameter, params);
-        this.animator = new LaserAnimator(this.color, this.positionParameter, params);
+        this.animator = new animator(this.color, this.positionParameter, params);
 
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
         this.min = new Vector(Infinity, Infinity);
@@ -82,24 +83,16 @@ class Slider {
         this.animator.update(offset);
     }
 
-    draw() {
+    drawAnimator() {
         this.animator.draw();
-        this.drawRectangles();
     }
 
     drawRectangles() {
-        for (var i = 0; i < this.rectangles.length; i++) {
-            this.rectangles[i].draw(this.origin);
-        }
+        this.rectangles.forEach((r) => r.draw(this.origin));
     }
 
     hitTest(point) {
-        for (var i = 0; i < this.rectangles.length; i++) {
-            if (this.rectangles[i].hitTest(this.origin, point)) {
-                return true;
-            }
-        }
-        return false;
+        return this.rectangles.some((r) => r.hitTest(this.origin, point));
     }
 
     dragStart(mousePosition) {

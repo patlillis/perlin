@@ -27,16 +27,17 @@ function init() {
 
     for (var i = 0; i < RECTANGLES.length; i++) {
         var data = RECTANGLES[i];
-        var color = data[0];
-        var audio = data[1];
-        var pos0 = data[2];
-        var pos1 = data[3];
-        var startPos = data[4];
-        var rectIndex = 5;
+        var dataIndex = 0;
+        var animator = data[dataIndex++];
+        var color = data[dataIndex++];
+        var audio = data[dataIndex++];
+        var pos0 = data[dataIndex++];
+        var pos1 = data[dataIndex++];
+        var startPos = data[dataIndex++];
 
-        var slider = new Slider(color, audio, pos0, pos1, startPos, { simplex, alea, canvas });
-        for (; rectIndex < data.length; rectIndex++) {
-            var rect = data[rectIndex];
+        var slider = new Slider(animator, color, audio, pos0, pos1, startPos, { simplex, alea, canvas });
+        for (; dataIndex < data.length; dataIndex++) {
+            var rect = data[dataIndex];
             slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
         }
         sliders.push(slider);
@@ -53,14 +54,14 @@ function canvasMouseDownListener(e) {
     mousePosition = getCursorPositionOnCanvas(e);
 
     //Find which shape was clicked
-    for (var i = sliders.length - 1; i >= 0; i--) {
-        var slider = sliders[i];
-        if (slider.hitTest(mousePosition)) {
-            dragging = slider;
+    sliders.someReverse(function (s) {
+        if (s.hitTest(mousePosition)) {
+            dragging = s;
             dragging.dragStart(mousePosition);
-            break;
+            // Break loop early.
+            return true;
         }
-    }
+    });
 
     if (dragging !== null) {
         window.addEventListener("mousemove", canvasMouseMoveListener, false);
@@ -84,16 +85,7 @@ function canvasMouseUpListener(e) {
     window.removeEventListener("mouseup", canvasMouseUpListener, false);
 
     if (!hasMoved) {
-        // Didn't drag anything, see if one of the controls was clicked.
-        var clickCoords = getCursorPositionOnCanvas(e);
-        if (Vector.eq(clickCoords, mousePosition)) {
-            for (var i = sliders.length - 1; i >= 0; i--) {
-                if (sliders[i].hitTest(clickCoords)) {
-                    sliders[i].click();
-                    break;
-                }
-            }
-        }
+        // Didn't drag anything, for now there's no behavior in that case.
     }
 
     if (dragging !== null) {
@@ -131,12 +123,9 @@ function resize() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (var i = 0; i < sliders.length; i++) {
-        sliders[i].update(offset);
-        sliders[i].draw();
-        // sliders[i].drawBlips();
-        // sliders[i].drawRectangles();
-    }
+    sliders.forEach((s) => s.update(offset));
+    sliders.forEach((s) => s.drawAnimator());
+    sliders.forEach((s) => s.drawRectangles());
 
     offset.x += offsetInc;
     offset.y += offsetInc;

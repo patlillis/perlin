@@ -14,23 +14,18 @@ class BlipAnimator {
         }
     }
 
-    // l should be in range [0,1].
-    setLevel(l) {
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].setLevel(l);
-        }
+    // level should be in range [0,1].
+    setLevel(level) {
+        this.level = level;
+        this.blips.forEach((b) => b.setLevel(level));
     }
 
     update(offset) {
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].update(offset);
-        }
+        this.blips.forEach((b) => b.update(offset));
     }
 
     draw() {
-        for (var i = 0; i < this.blips.length; i++) {
-            this.blips[i].draw();
-        }
+        this.blips.forEach((b) => b.draw());
     }
 }
 
@@ -99,9 +94,9 @@ class Blip {
     }
 
     draw() {
-        var opacity = (this.calculateOpacity() * this.level).toString();//this.enabled ? "0.4" : "1";
-        this.ctx.strokeStyle = "rgba(" + hexToRgb(this.color) + ", " + opacity + ")";
-        this.ctx.lineWidth = this.lineWidth;
+        this.ctx.strokeStyle = this.color;
+        this.ctx.lineWidth = this.level * 3;
+        this.ctx.lineCap = "round";
 
         this.ctx.beginPath();
 
