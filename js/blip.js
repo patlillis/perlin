@@ -111,7 +111,7 @@ class Blip {
                 this.ctx.lineTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
             else {
-                if (this.level > 0.01) {
+                if (this.level > 0.05) {
                     this.ctx.stroke();
                 }
                 this.ctx.moveTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
@@ -120,7 +120,7 @@ class Blip {
             pastPosition = newPosition;
         }
 
-        if (this.level > 0.01) {
+        if (this.level > 0.05) {
             ctx.stroke();
         }
     }

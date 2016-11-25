@@ -1,6 +1,6 @@
 class Slider {
     // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
-    constructor(animator, color, audioUrl, position0, position1, startPosition, params) {
+    constructor(animator, color, bgColor, audioUrl, position0, position1, startPosition, params) {
         // this.animator = animator;
         this.alea = params.alea;
         this.position0 = position0;
@@ -8,16 +8,22 @@ class Slider {
         // Parametric position in range [0,1] from position0 to position1.
         this.positionParameter = startPosition;
         this.color = color;
+        this.bgColor = bgColor;
         this.rectangles = [];
         this.canvas = params.canvas;
-        this.easeAmount = 0.08;
+        this.ctx = this.canvas.getContext('2d');
+        this.easeAmount = 0.1;
 
-        // this.animator = new BlipAnimator(this.color, this.positionParameter, params);
+        // For showing the arrows in/out.
+        this.isHovering = false;
+        this.arrowAlpha = 0;
+
         this.animator = new animator(this.color, this.positionParameter, params);
 
         // Tracks the total encompasing size of all rectangles. These are relative positions from the slider's origin.
         this.min = new Vector(Infinity, Infinity);
         this.max = new Vector(-Infinity, -Infinity);
+        this.mid = Vector.zero;
 
         this.initAudio(audioUrl);
 
@@ -50,6 +56,7 @@ class Slider {
         this.rectangles.push(r);
         this.min = Vector.min(this.min, r.position);
         this.max = Vector.max(this.max, Vector.add(r.position, r.size));
+        this.mid = Vector.average(this.min, this.max);
     }
 
     percentageToScreenPos(p) {
@@ -64,6 +71,20 @@ class Slider {
     // In percentage.
     get position() {
         return Vector.lerp(this.position0, this.position1, this.positionParameter);
+    }
+
+    // Angle (in radians) from position0Screen to position1Screen
+    get position0To1ScreenAngle() {
+        var dx = this.position1Screen.x - this.position0Screen.x;
+        var dy = this.position0Screen.y - this.position1Screen.y;
+        var thetaRadians = Math.atan2(dy, dx);
+
+        return thetaRadians;
+    }
+
+    // A vector from position0Screen to position1Screen
+    get position0To1Screen() {
+        return Vector.subtract(this.position1Screen, this.position0Screen);
     }
 
     get position0Screen() { return this.percentageToScreenPos(this.position0); }
@@ -81,6 +102,16 @@ class Slider {
         }
 
         this.animator.update(offset);
+
+        var arrowAlphaInc = 0.08;
+        var newArrowAlpha = this.arrowAlpha;
+        if (this.isHovering || this.dragging) {
+            newArrowAlpha += arrowAlphaInc;
+        }
+        else {
+            newArrowAlpha -= arrowAlphaInc;
+        }
+        this.arrowAlpha = clamp(newArrowAlpha, 0.0, 1.0);
     }
 
     drawAnimator() {
@@ -89,6 +120,92 @@ class Slider {
 
     drawRectangles() {
         this.rectangles.forEach((r) => r.draw(this.origin));
+    }
+
+    drawArrows() {
+        this.ctx.globalAlpha = this.arrowAlpha;
+        this.ctx.fillStyle = 'white';
+        this.ctx.strokeStyle = this.bgColor;
+        this.ctx.lineWidth = 2;
+
+        // Draw up arrow.
+        var arrowDistance = (15 * this.arrowAlpha) + 70;
+
+        // Towards 1
+        this.ctx.globalAlpha = this.arrowAlpha;
+        if (this.positionParameter >= 0.95) {
+            this.ctx.globalAlpha = 0.2 * this.arrowAlpha;
+        }
+        var forwardAngle = this.position0To1ScreenAngle;
+        var forwardOffsetX = Math.cos(forwardAngle) * arrowDistance;
+        var forwardOffsetY = -Math.sin(forwardAngle) * arrowDistance;
+        this.drawArrow(Vector.add(this.mid, new Vector(forwardOffsetX, forwardOffsetY)), forwardAngle);
+
+        // Towards 0
+        this.ctx.globalAlpha = this.arrowAlpha;
+        if (this.positionParameter <= 0.05) {
+            this.ctx.globalAlpha = 0.2 * this.arrowAlpha;
+        }
+        var backwardAngle = Math.PI + forwardAngle;
+        var backwardOffsetX = -Math.cos(backwardAngle) * arrowDistance;
+        var backwardOffsetY = Math.sin(backwardAngle) * arrowDistance;
+        this.drawArrow(Vector.subtract(this.mid, new Vector(backwardOffsetX, backwardOffsetY)), backwardAngle);
+
+        // Reset alpha
+        this.ctx.globalAlpha = 1.0;
+    }
+
+    // Offset is a Vector (pixels), angle is in radians.
+    // Angle of 0 means draw it pointing to the right.
+    drawArrow(offset, arrowAngle) {
+        var arrowLength = 20;
+        var arrowWidth = 6;
+        var arrowInnerWidth = arrowLength - arrowWidth;
+        var arrowOrigin = Vector.add(this.origin, offset);
+
+        // The angle of the main arrow bend
+        var theta = (Math.PI / 4);
+        var sinTheta = Math.sin(theta);
+        var cosTheta = Math.cos(theta);
+
+        // The angle of the outer corners
+        var angle = (Math.PI / 4);
+        var sinAngle = Math.sin(angle);
+        var cosAngle = Math.cos(angle);
+
+        this.ctx.translate(arrowOrigin.x, arrowOrigin.y);
+        this.ctx.rotate(-arrowAngle + 1 * (Math.PI / 2));
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 0);
+
+        var x = -(arrowLength * sinTheta);
+        var y = (arrowLength * cosTheta);
+        this.ctx.lineTo(x, y);
+
+        x += arrowWidth * sinAngle;
+        y += arrowWidth * cosAngle;
+        this.ctx.lineTo(x, y);
+
+        x += arrowInnerWidth * sinTheta;
+        y -= arrowInnerWidth * cosTheta;
+        this.ctx.lineTo(x, y);
+
+        x += arrowInnerWidth * sinTheta;
+        y += arrowInnerWidth * cosTheta;
+        this.ctx.lineTo(x, y);
+
+        x += arrowWidth * sinAngle;
+        y -= arrowWidth * cosAngle;
+        this.ctx.lineTo(x, y);
+
+        this.ctx.closePath();
+
+        this.ctx.fill();
+        this.ctx.stroke();
+        // reset current transformation matrix to the identity matrix
+        this.ctx.rotate(arrowAngle - 1 * (Math.PI / 2));
+        this.ctx.translate(-arrowOrigin.x, -arrowOrigin.y);
     }
 
     hitTest(point) {
@@ -128,15 +245,14 @@ class Slider {
             this.audio.volume = l;
         }
     }
-    
+
     // Returns the parametric value t, where t is in [0, 1] such that
     // the closest point between this.offPosition and this.onPosition
     // to p is the lerp at t.
     getClosestPoint(p) {
-        var aToP = Vector.subtract(p, this.position0Screen);
-        var aToB = Vector.subtract(this.position1Screen, this.position0Screen);
-        var dot = Vector.dotProduct(aToP, aToB);
-        var t = dot / aToB.magnitude;
+        var position0ToP = Vector.subtract(p, this.position0Screen);
+        var dot = Vector.dotProduct(position0ToP, this.position0To1Screen);
+        var t = dot / this.position0To1Screen.magnitude;
 
         // Make sure we're within bounds.
         return clamp(t, 0, 1);

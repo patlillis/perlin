@@ -25,7 +25,7 @@ class Rectangle {
         this.ctx.clearRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.fillRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
         this.ctx.strokeStyle = this.bgColor;
-        this.ctx.lineWidth = 4;
+        this.ctx.lineWidth = 2;
         this.ctx.strokeRect(this.position.x + origin.x, this.position.y + origin.y, this.size.x, this.size.y);
     }
 }

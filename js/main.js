@@ -15,10 +15,11 @@ var sliders = [];
 var targetPosition = Vector.zero;
 
 function init() {
+    var bgColor = PALETTE[0];
     canvas = document.getElementById("cnvs");
     canvas.size = () => new Vector(canvas.width, canvas.height);
     ctx = this.canvas.getContext("2d");
-    canvas.style.backgroundColor = PALETTE[0];
+    canvas.style.backgroundColor = bgColor;
 
     resize();
 
@@ -35,15 +36,16 @@ function init() {
         var pos1 = data[dataIndex++];
         var startPos = data[dataIndex++];
 
-        var slider = new Slider(animator, color, audio, pos0, pos1, startPos, { simplex, alea, canvas });
+        var slider = new Slider(animator, color, bgColor, audio, pos0, pos1, startPos, { simplex, alea, canvas });
         for (; dataIndex < data.length; dataIndex++) {
             var rect = data[dataIndex];
-            slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, PALETTE[0], canvas));
+            slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, bgColor, canvas));
         }
         sliders.push(slider);
     }
 
-    canvas.addEventListener("mousedown", canvasMouseDownListener, false)
+    canvas.addEventListener("mousedown", canvasMouseDownListener, false);
+    window.addEventListener("mousemove", canvasMouseMoveListener, false);
 
     draw();
 }
@@ -64,7 +66,7 @@ function canvasMouseDownListener(e) {
     });
 
     if (dragging !== null) {
-        window.addEventListener("mousemove", canvasMouseMoveListener, false);
+        window.addEventListener("mousemove", canvasDragMouseMoveListener, false);
     }
 
     canvas.removeEventListener("mousedown", canvasMouseDownListener, false);
@@ -81,6 +83,8 @@ function canvasMouseDownListener(e) {
 }
 
 function canvasMouseUpListener(e) {
+    mousePosition = getCursorPositionOnCanvas(e);
+
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
     window.removeEventListener("mouseup", canvasMouseUpListener, false);
 
@@ -92,15 +96,31 @@ function canvasMouseUpListener(e) {
         dragging.dragStop();
         dragging = null;
         hasMoved = false;
-        window.removeEventListener("mousemove", canvasMouseMoveListener, false);
+        window.removeEventListener("mousemove", canvasDragMouseMoveListener, false);
     }
+
+    canvasMouseMoveListener(e);
 }
 
 function canvasMouseMoveListener(e) {
-    hasMoved = true;
-
-    //getting mouse position correctly
     mousePosition = getCursorPositionOnCanvas(e);
+
+    // Find which shape was hovered
+    var isHovering = (dragging != null);
+    sliders.someReverse(function (s) {
+        if (!isHovering && s.hitTest(mousePosition)) {
+            s.isHovering = true;
+            isHovering = true;
+        }
+        else {
+            s.isHovering = false;
+        }
+    });
+}
+
+function canvasDragMouseMoveListener(e) {
+    mousePosition = getCursorPositionOnCanvas(e);
+    hasMoved = true;
 
     if (dragging !== null) {
         dragging.dragMove(mousePosition);
@@ -126,6 +146,7 @@ function draw() {
     sliders.forEach((s) => s.update(offset));
     sliders.forEach((s) => s.drawAnimator());
     sliders.forEach((s) => s.drawRectangles());
+    sliders.forEach((s) => s.drawArrows());
 
     offset.x += offsetInc;
     offset.y += offsetInc;

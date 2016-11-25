@@ -85,12 +85,13 @@ class Laser {
     }
 
     update(offset) {
-        this.yPositionPercentage += this.yPositonIncrease;
+        var inc = lerpDouble(this.yPositonIncrease / 2, this.yPositonIncrease, this.level);
+        this.yPositionPercentage += inc;
     }
 
     draw() {
         // Pretty much just a single rectangle.
-        if (this.level > 0.0) {
+        if (this.level > 0.05) {
             this.ctx.fillStyle = this.color;
             this.ctx.fillRect(this.xPosition, this.yPosition, this.width, this.height);
         }

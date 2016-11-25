@@ -12,7 +12,9 @@ class Vector {
         return new Vector(this.x, this.y);
     }
 
-    static get zero() { return new Vector(0, 0); }
+    static get zero() {
+        return new Vector(0, 0);
+    }
 
     static add(v1, v2) {
         return new Vector(v1.x + v2.x, v1.y + v2.y);
