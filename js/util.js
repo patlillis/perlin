@@ -2,6 +2,8 @@ function mod(n, m) {
     return ((n % m) + m) % m;
 }
 
+// Returns the rgb components as a comma-separated string.
+// E.g. hexToRgb('#ff0000') => '255,0,0'
 function hexToRgb(hex) {
     var bigint = parseInt(hex.substring(1), 16);
     var r = (bigint >> 16) & 255;

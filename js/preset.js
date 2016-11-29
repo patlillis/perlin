@@ -21,7 +21,8 @@ var PALETTES = {
         '#041122',
         '#259073',
         '#7FDA89',
-        '#E6F99D'
+        '#E6F99D',
+        '#512187'
     ]
 };
 var PALETTE = PALETTES.ACID;
@@ -34,7 +35,8 @@ var AUDIO_FILES = {
 
 var ANIMATORS = {
     LASER: LaserAnimator,
-    BLIP: BlipAnimator
+    BLIP: BlipAnimator,
+    SCREEN: ScreenAnimator
 }
 
 // Each entry here represents:
@@ -47,19 +49,9 @@ var ANIMATORS = {
 //  7+ -  A series of rectangles, where the position is a pixel offset from the anchor, and the size is in pixels
 var RECTANGLES = [
     [
-        ANIMATORS.BLIP,
+        ANIMATORS.LASER,
         PALETTE[1],
         AUDIO_FILES.PIANO,
-        new V(0.6, 0.3),
-        new V(0.8, 0.3),
-        0.2,
-        new Rectangle(new V(-25, -25), new V(75, 75)),
-        new Rectangle(new V(-33, -33), new V(25, 25)),
-    ],
-    [
-        ANIMATORS.LASER,
-        PALETTE[2],
-        AUDIO_FILES.VIOLIN,
         new V(0.4, 0.5),
         new V(0.6, 0.5),
         0.5,
@@ -69,11 +61,21 @@ var RECTANGLES = [
     [
         ANIMATORS.BLIP,
         PALETTE[3],
-        AUDIO_FILES.BALLOONS,
+        AUDIO_FILES.VIOLIN,
         new V(0.2, 0.7),
         new V(0.4, 0.7),
-        0.8,
+        0.5,
         new Rectangle(new V(-25, -25), new V(75, 75)),
         new Rectangle(new V(-30, 27), new V(125, 25)),
-    ]
+    ],
+    [
+        ANIMATORS.SCREEN,
+        PALETTE[4],
+        AUDIO_FILES.BALLOONS,
+        new V(0.6, 0.3),
+        new V(0.8, 0.3),
+        0.5,
+        new Rectangle(new V(-25, -25), new V(75, 75)),
+        new Rectangle(new V(-33, -33), new V(25, 25)),
+    ],
 ];
