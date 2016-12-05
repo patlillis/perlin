@@ -14,6 +14,13 @@ class Slider {
         this.ctx = this.canvas.getContext('2d');
         this.easeAmount = 0.1;
 
+        // For bob & sway
+        this.swaySpeed = lerp(0.001, 0.005, this.alea());
+        this.swayDirection = this.alea < 0.5 ? +1 : -1;
+        this.swayOffset = this.alea();
+        this.swayMax = 15;
+        this.swayClamp = 8;
+
         // For showing the arrows in/out.
         this.isHovering = false;
         this.arrowAlpha = 0;
@@ -101,8 +108,10 @@ class Slider {
             this.setLevel(this.positionParameter);
         }
 
+        // Update effect animator
         this.animator.update(offset);
 
+        // Update arrow alpha, for hovering over sliders
         var arrowAlphaInc = 0.08;
         var newArrowAlpha = this.arrowAlpha;
         if (this.isHovering || this.dragging) {
@@ -112,6 +121,13 @@ class Slider {
             newArrowAlpha -= arrowAlphaInc;
         }
         this.arrowAlpha = clamp(newArrowAlpha, 0.0, 1.0);
+
+        // Update bob & sway
+        this.swayOffset += this.swayDirection * this.swaySpeed;
+        if (this.swayOffset >= 1 || this.swayOffset <= 0) {
+            this.swayDirection = -this.swayDirection;
+        }
+        this.swayOffset = clamp(this.swayOffset, 0, 1);
     }
 
     drawAnimator() {
@@ -119,7 +135,8 @@ class Slider {
     }
 
     drawRectangles() {
-        this.rectangles.forEach((r) => r.draw(this.origin));
+        var swayOffset = lerp(-this.swayClamp, this.swayClamp, this.swayOffset, Easing.easeInOutCubic);
+        this.rectangles.forEach((r) => r.draw(Vector.add(this.origin, new Vector(0, swayOffset))));
     }
 
     drawArrows() {

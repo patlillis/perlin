@@ -6,11 +6,11 @@ class LaserAnimator {
         this.lasers = [];
         this.alea = params.alea;
 
-        this.spawnLaser = () => new Laser(color, this.level, params);
+        this.spawnLaser = (l) => new Laser(color, l, params);
 
         var numLasers = 30;//(this.alea() * 300) + 200;
         for (var i = 0; i < numLasers; i++) {
-            this.lasers.push(this.spawnLaser());
+            this.lasers.push(this.spawnLaser(this.level));
         }
     }
 
@@ -26,7 +26,7 @@ class LaserAnimator {
 
             // If that update took the laser offscreen, respawn a new one at the top.
             if (this.lasers[i].isFinished) {
-                this.lasers[i] = this.spawnLaser();
+                this.lasers[i] = this.spawnLaser(this.level);
             }
         }
     }
@@ -42,6 +42,7 @@ class Laser {
     constructor(color, level, params) {
         this.color = color;
         this.level = level;
+        this.easing = Easing.easeInOutCubic;
 
         this.simplex = params.simplex;
         this.alea = params.alea;
@@ -54,14 +55,14 @@ class Laser {
         var xWidth = xMax - xMin;
         // Height is in percentage of screen height.
         this.heightPercentage = 0.3;
-        this.xPositionOffset = (this.alea() * xWidth) + xMin;
-        this.yPositionPercentage = -((this.alea() * 5) + 0.3);
-        this.yPositonIncrease = (this.alea() * 0.015) + 0.015;
+        this.xPositionOffset = lerp(xMin, xMin + xWidth, this.alea());
+        this.yPositionPercentage = lerp(-5.3, -0.3, this.alea())
+        this.yPositonIncrease = lerp(0.015, 0.03, this.alea());
     }
 
     // Width is based on the current level.
     get width() {
-        return this.level * 3;
+        return lerp(0, 3, this.level, this.easing);
     }
 
     get xPosition() {
@@ -85,15 +86,13 @@ class Laser {
     }
 
     update(offset) {
-        var inc = lerpDouble(this.yPositonIncrease / 2, this.yPositonIncrease, this.level);
+        var inc = lerp(this.yPositonIncrease / 5, this.yPositonIncrease, this.level, this.easing);
         this.yPositionPercentage += inc;
     }
 
     draw() {
         // Pretty much just a single rectangle.
-        if (this.level > 0.05) {
-            this.ctx.fillStyle = this.color;
-            this.ctx.fillRect(this.xPosition, this.yPosition, this.width, this.height);
-        }
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(this.xPosition, this.yPosition, this.width, this.height);
     }
 }

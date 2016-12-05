@@ -13,8 +13,8 @@ function hexToRgb(hex) {
     return r + "," + g + "," + b;
 }
 
-function lerpDouble(a, b, t) {
-    return (a + (b - a) * t);
+function lerp(a, b, t, easingFunction = Easing.linear) {
+    return (a + (b - a) * easingFunction(t));
 }
 
 function clamp(x, min, max) {

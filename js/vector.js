@@ -41,7 +41,7 @@ class Vector {
     }
 
     static lerp(v1, v2, t) {
-        return new Vector(lerpDouble(v1.x, v2.x, t), lerpDouble(v1.y, v2.y, t));
+        return new Vector(lerp(v1.x, v2.x, t), lerp(v1.y, v2.y, t));
     }
 
     static normalize(v) {
