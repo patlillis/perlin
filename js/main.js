@@ -13,8 +13,28 @@ var offset = Vector.zero;
 var simplex;
 var sliders = [];
 var targetPosition = Vector.zero;
+var blendingOptions = [
+    'source-atop',
+    'source-in',
+    'source-out',
+    'source-over',
+    'destination-atop',
+    'destination-in',
+    'destination-out',
+    'destination-over',
+    'lighter',
+    'darker',
+    'xor',
+    'copy',
+];
+var options = {
+    blendMode: blendingOptions[0]
+};
 
 function init() {
+    var gui = new dat.GUI();
+    gui.add(options, 'blendMode', blendingOptions);
+
     var bgColor = PALETTE[0];
     canvas = document.getElementById("cnvs");
     canvas.size = () => new Vector(canvas.width, canvas.height);
@@ -36,13 +56,27 @@ function init() {
         var pos1 = data[dataIndex++];
         var startPos = data[dataIndex++];
 
-        var slider = new Slider(animator, color, bgColor, audio, pos0, pos1, startPos, { simplex, alea, canvas });
+        var slider = new Slider(animator, color, bgColor, audio, pos0, pos1, startPos, { simplex, alea, canvas, sliders });
         for (; dataIndex < data.length; dataIndex++) {
             var rect = data[dataIndex];
             slider.addRectangle(new Rectangle(rect.position, rect.size, slider.color, bgColor, canvas));
         }
         sliders.push(slider);
     }
+
+    // Make sure sliders with 'Screen' animator are at the end of the array.
+    sliders.sort(function (s1, s2) {
+        var s1Screen = s1.animator.constructor.name == 'ScreenAnimator';
+        var s2Screen = s2.animator.constructor.name == 'ScreenAnimator';
+
+        if (s1Screen == s2Screen)
+            return 0;
+    
+        if (s1Screen)
+            return 1;
+
+        return -1;
+    });
 
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
     window.addEventListener("mousemove", canvasMouseMoveListener, false);

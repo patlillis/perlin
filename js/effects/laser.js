@@ -57,7 +57,7 @@ class Laser {
         this.heightPercentage = 0.3;
         this.xPositionOffset = lerp(xMin, xMin + xWidth, this.alea());
         this.yPositionPercentage = lerp(-5.3, -0.3, this.alea())
-        this.yPositonIncrease = lerp(0.015, 0.03, this.alea());
+        this.yPositonIncrease = lerp(0.015, 0.02, this.alea());
     }
 
     // Width is based on the current level.

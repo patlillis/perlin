@@ -5,6 +5,7 @@ class BlipAnimator {
         this.level = level;
         this.blips = [];
         this.alea = params.alea;
+        this.easing = Easing.easeInOutCubic;
 
         this.spawnBlip = () => new Blip(color, this.level, params);
 
@@ -71,7 +72,7 @@ class Blip {
         var pixel = this.simplex.noise2D(this.position.x + offset.x, this.position.y + offset.y);
 
         // Set the angle and the speed according to brightness
-        var speed = pixel * this.speed;
+        var speed = pixel * this.speed * lerp(0.25, 2, this.level, this.easing);
         var angle = pixel * 360 * Math.PI / 180;
 
         // Update the blip's position / rotation
@@ -95,7 +96,7 @@ class Blip {
 
     draw() {
         this.ctx.strokeStyle = this.color;
-        this.ctx.lineWidth = this.level * 3;
+        this.ctx.lineWidth = lerp(0, 3, this.level, this.easing);
         this.ctx.lineCap = "round";
 
         this.ctx.beginPath();
@@ -111,18 +112,14 @@ class Blip {
                 this.ctx.lineTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
             else {
-                if (this.level > 0.05) {
-                    this.ctx.stroke();
-                }
+                this.ctx.stroke();
                 this.ctx.moveTo(newPosition.x * this.canvas.width, newPosition.y * this.canvas.height);
             }
 
             pastPosition = newPosition;
         }
 
-        if (this.level > 0.05) {
-            ctx.stroke();
-        }
+        ctx.stroke();
     }
 
     // Make sure that a line from a to b didn't cross the screen boundary.

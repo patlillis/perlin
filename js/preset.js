@@ -22,7 +22,8 @@ var PALETTES = {
         '#259073',
         '#7FDA89',
         '#E6F99D',
-        '#512187'
+        '#512187',
+        '#212487'
     ]
 };
 var PALETTE = PALETTES.ACID;
@@ -30,13 +31,15 @@ var PALETTE = PALETTES.ACID;
 var AUDIO_FILES = {
     PIANO: "sounds/piano.mp3",
     VIOLIN: "sounds/violin.mp3",
-    BALLOONS:"sounds/balloons.mp3",
+    BALLOONS: "sounds/balloons.mp3",
+    MARIMBA: "sounds/marimba.mp3",
 };
 
 var ANIMATORS = {
     LASER: LaserAnimator,
     BLIP: BlipAnimator,
-    SCREEN: ScreenAnimator
+    SCREEN: ScreenAnimator,
+    BLOCKS: BlocksAnimator
 }
 
 // Each entry here represents:
@@ -72,8 +75,18 @@ var RECTANGLES = [
         ANIMATORS.SCREEN,
         PALETTE[4],
         AUDIO_FILES.BALLOONS,
-        new V(0.6, 0.3),
+        new V(0.8, 0.7),
         new V(0.8, 0.3),
+        0.8,
+        new Rectangle(new V(-25, -25), new V(75, 75)),
+        new Rectangle(new V(-33, -33), new V(25, 25)),
+    ],
+    [
+        ANIMATORS.BLOCKS,
+        PALETTE[5],
+        AUDIO_FILES.MARIMBA,
+        new V(0.15, 0.4),
+        new V(0.35, 0.2),
         0.5,
         new Rectangle(new V(-25, -25), new V(75, 75)),
         new Rectangle(new V(-33, -33), new V(25, 25)),

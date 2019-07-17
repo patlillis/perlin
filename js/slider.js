@@ -1,7 +1,6 @@
 class Slider {
-    // position is percentage of total canvas size, params should have: { simplex, alea, canvas }
+    // position is percentage of total canvas size, params should have: { simplex, alea, canvas, sliders }
     constructor(animator, color, bgColor, audioUrl, position0, position1, startPosition, params) {
-        // this.animator = animator;
         this.alea = params.alea;
         this.position0 = position0;
         this.position1 = position1;
