@@ -6,12 +6,10 @@
     <meta name="viewport" content="user-scalable=no, width=device-width,
       initial-scale=0.5, minimum-scale=0.5, maximum-scale=0.5">
     <title>Perlin</title>
-    <link href="https://fonts.googleapis.com/css?family=Orbitron:400,500,700,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet"> 
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/main.css">
 
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-    <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>-->
 
     <script type="text/javascript" src="js/alea.js"></script>
     <script type="text/javascript" src="js/simplex-noise.js"></script>
@@ -27,11 +25,14 @@
     <script type="text/javascript" src="js/main.js"></script>
 </head>
 
-<body bgcolor="" onload="init()" onresize="resize()">
+<body onload="init()" onresize="resize()">
     <canvas id="cnvs"></canvas>
-    <!--<audio preload id="balloons" src="sounds/balloons.mp4"></audio>
-    <audio preload id="piano" src="sounds/piano.mp4"></audio>
-    <audio preload id="violin" src="sounds/violin.mp4"></audio>-->
+
+    <div id="instructions">
+      <p class="title">PERLIN</p>
+      <p><span class="bold">Spacebar</span> to mute/unmute</p>
+      <p><span class="bold">Enter</span> for fullscreen</p>
+    </div>
 </body>
 
 </html>

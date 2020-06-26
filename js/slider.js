@@ -51,15 +51,16 @@ class Slider {
 
         function audioLoaded() {
             var audioEl = document.createElement("audio");
+            audioEl.muted = true;
             audioEl.src = url;
             audioEl.loop = true;
             audioEl.volume = this.positionParameter;
-            audioEl.play();
             this.audio = audioEl;
         }
     }
 
     toggleMuted() {
+        if (this.audio.paused) this.audio.play();
         this.audio.muted = !this.audio.muted;
     }   
 
