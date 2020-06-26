@@ -9,7 +9,7 @@ var easeAmount = 0.05;
 var hasMoved = false;
 var mousePosition = Vector.zero;
 var offsetInc = 0.002;
-var offset = Vector.zero;
+var offset = 0;
 var simplex;
 var sliders = [];
 var targetPosition = Vector.zero;
@@ -164,8 +164,7 @@ function draw() {
     sliders.forEach((s) => s.drawRectangles());
     sliders.forEach((s) => s.drawArrows());
 
-    offset.x += offsetInc;
-    offset.y += offsetInc;
+    offset += offsetInc;
 
     requestAnimationFrame(draw);
 }

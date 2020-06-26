@@ -68,7 +68,7 @@ class Blip {
 
     update(offset) {
         // Get the pixel the blip is over
-        var pixel = this.simplex.noise2D(this.position.x + offset.x, this.position.y + offset.y);
+        var pixel = this.simplex.noise3D(this.position.x, this.position.y, offset);
 
         // Set the angle and the speed according to brightness
         var speed = pixel * this.speed;
