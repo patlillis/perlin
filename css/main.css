@@ -51,6 +51,17 @@ canvas {
     margin-bottom: 16px;
 }
 
+p:last-of-type {
+    margin-bottom: 8px;
+}
+
+a {
+    color: white;
+    padding-top: 16px;
+    text-decoration: none;
+    border-bottom: 1px solid white;
+    padding-bottom: 1px;
+}
 
 *.unselectable {
    -moz-user-select: -moz-none;
