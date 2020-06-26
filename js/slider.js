@@ -59,6 +59,10 @@ class Slider {
         }
     }
 
+    toggleMuted() {
+        this.audio.muted = !this.audio.muted;
+    }   
+
     addRectangle(r) {
         this.rectangles.push(r);
         this.min = Vector.min(this.min, r.position);

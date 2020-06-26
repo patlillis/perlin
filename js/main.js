@@ -47,6 +47,22 @@ function init() {
     canvas.addEventListener("mousedown", canvasMouseDownListener, false);
     window.addEventListener("mousemove", canvasMouseMoveListener, false);
 
+    document.addEventListener("keydown", function(e) {
+        // Enter: full-screen
+        if (e.keyCode == 13) {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen(); 
+            }
+        }
+
+        // Space: mute
+        if (e.keyCode == 32) {
+            sliders.forEach(s => s.toggleMuted())
+        }
+    }, false);
+
     draw();
 }
 
